@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import HelloWorld from '../components/HelloWorld.vue'
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <HelloWorld msg="Bienvenido!" />
+    <nav>
+      <RouterLink to="/login">Iniciar Sesión</RouterLink>
+    </nav>
   </main>
 </template>
