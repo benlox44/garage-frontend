@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import LoginView from '../views/moduloAuth/LoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,7 +12,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/moduloAuth/LoginView.vue'), // Lazy-loaded
+      component: () => import('../views/viewsAuth/AuthView.vue'), // Lazy-loaded
     },
   ],
 })
