@@ -4,12 +4,10 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <template>
   <v-app class="app-global">
-    <v-main>
-      <v-container class="container-app">
-        <RouterView />
-      </v-container>
-    </v-main>
-  </v-app>
+  <v-main>
+    <RouterView />
+  </v-main>
+</v-app>
 </template>
 
 <style scoped>
@@ -20,4 +18,3 @@ import { RouterLink, RouterView } from 'vue-router'
 }
 </style>
 
-<!-- 👇 Agrega esto fuera del scoped o en main.css -->
