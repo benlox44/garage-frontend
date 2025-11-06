@@ -16,6 +16,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
     "@tailwindcss/vite": "^4.1.16",
     "pinia": "^3.0.3",
     "sass": "^1.93.2",
