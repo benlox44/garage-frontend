@@ -1,21 +1,55 @@
 <template>
+  <h1>Registrate ingresando tus datos!!🧐🤖</h1>
   <v-container class="container-register">
-    <h1 style="margin-bottom: 30px">Registrate ingresando tus datos!!🧐🤖</h1>
     <v-form v-model="valid" ref="form">
       <v-row>
-        <v-col md="12" cols="12">
-          <v-text-field v-model="email" :rules="emailRules" label="E-mail" required></v-text-field>
+        <v-col md="5" cols="12">
+          <v-text-field
+            v-model="name"
+            :rules="nameRules"
+            label="Name"
+            variant="solo"
+            required
+          ></v-text-field>
+          <!-- v-model es la variable en el script-->
+        </v-col>
+        <v-col md="7" cols="12">
+          <v-text-field
+            v-model="email"
+            :rules="emailRules"
+            label="E-mail"
+            variant="solo"
+            required
+          ></v-text-field>
           <!-- v-model es la variable en el script-->
         </v-col>
 
-        <v-col md="12" cols="12">
+        <v-col md="6" cols="12">
           <v-text-field
             v-model="password"
             type="password"
             :rules="passwordRules"
             label="Password"
+            variant="solo"
             required
           ></v-text-field>
+        </v-col>
+        <v-col md="6" cols="12">
+          <v-text-field
+            v-model="passwordConfirmed"
+            type="password"
+            :rules="passwordConfirmedRules"
+            label="PasswordConfirmed"
+            variant="solo"
+            required
+          ></v-text-field>
+        </v-col>
+        <v-col md="12" cols="12">
+          <v-checkbox v-model="checkbox" :rules="checkboxRules" required>
+            <template v-slot:label>
+              <span>I agree that <strong>GARAGE STORE</strong> is awesome</span>
+            </template>
+          </v-checkbox>
         </v-col>
         <v-col md="12" cols="12">
           <v-btn class="btn-register" @click="handleSubmit">Registrarse</v-btn>
@@ -29,6 +63,13 @@
 export default {
   data: () => ({
     valid: false,
+    name: '',
+    nameRules: [
+      (value) => {
+        if (value) return true
+        return 'Name is required.'
+      },
+    ],
     email: '',
     emailRules: [
       (value) => {
@@ -55,6 +96,8 @@ export default {
         return 'Password must be at least 6 characters.'
       },
     ],
+    passwordConfirmed: '',
+    passwordConfirmedRules: [(value) => !!value || 'Password confirmation is required.'],
     checkbox: false,
     checkboxRules: [(value) => value || 'Debes aceptar para continuar'],
   }),
@@ -63,16 +106,19 @@ export default {
       const isValid = await this.$refs.form.validate()
 
       if (!isValid.valid) {
-        console.log('Formulario inválido ❌')
+        alert('Formulario inválido ❌')
+        return
+      } else if (this.password !== this.passwordConfirmed) {
+        alert('Las contraseñas no coinciden ❌')
         return
       }
-      //Llamada a axios para iniciar sesión
+      //Llamada a axios para registrarse e iniciar sesión
       const formData = {
         email: this.email,
         password: this.password,
-        checkbox: this.checkbox,
       }
       console.log('Formulario válido ✅', formData)
+      alert('Registro exitoso ✅')
     },
   },
 }
@@ -82,7 +128,6 @@ export default {
 .container-register {
   max-width: 400px;
   margin: auto;
-  padding-top: 50px;
 }
 .btn-register {
   width: 100%;

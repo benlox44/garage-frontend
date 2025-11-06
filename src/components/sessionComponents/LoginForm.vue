@@ -4,7 +4,13 @@
     <v-form v-model="valid" ref="form">
       <v-row>
         <v-col md="12" cols="12">
-          <v-text-field v-model="email" :rules="emailRules" label="E-mail" required></v-text-field>
+          <v-text-field
+            v-model="email"
+            :rules="emailRules"
+            label="E-mail"
+            variant="solo"
+            required
+          ></v-text-field>
           <!-- v-model es la variable en el script-->
         </v-col>
 
@@ -14,13 +20,14 @@
             type="password"
             :rules="passwordRules"
             label="Password"
+            variant="solo"
             required
           ></v-text-field>
         </v-col>
         <v-col md="12" cols="12">
           <v-checkbox v-model="checkbox" :rules="checkboxRules" required>
             <template v-slot:label>
-              <span>I agree that <strong>GARAGE STORE</strong> is awesome</span>
+              <span>Recordar inicio de sesión</span>
             </template>
           </v-checkbox>
         </v-col>
@@ -63,7 +70,6 @@ export default {
       },
     ],
     checkbox: false,
-    checkboxRules: [(value) => value || 'Debes aceptar para continuar'],
   }),
   methods: {
     async handleSubmit() {
