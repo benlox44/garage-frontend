@@ -156,5 +156,8 @@ export default {
   max-width: 450px;
   height: 450px;
   min-height: 350px; /* <-- controla altura */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 }
 </style>

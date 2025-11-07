@@ -32,7 +32,12 @@
           </v-checkbox>
         </v-col>
         <v-col md="12" cols="12">
-          <v-btn class="btn-login" @click="handleSubmit">Ingresar</v-btn>
+          <v-btn class="btn-login" @click="handleSubmit" :disabled="loading">
+            <template v-if="loading">
+              <v-progress-circular indeterminate size="20"></v-progress-circular>
+            </template>
+            <template v-else> Ingresar </template>
+          </v-btn>
         </v-col>
       </v-row>
     </v-form>
@@ -70,6 +75,7 @@ export default {
       },
     ],
     checkbox: false,
+    loading: false,
   }),
   methods: {
     async handleSubmit() {
@@ -79,6 +85,7 @@ export default {
         console.log('Formulario inválido ❌')
         return
       }
+      this.loading = true // ⏳ inicia spinner
       //Llamada a axios para iniciar sesión
       const formData = {
         email: this.email,
@@ -86,6 +93,25 @@ export default {
         checkbox: this.checkbox,
       }
       console.log('Formulario válido ✅', formData)
+      //comprobar con backend
+
+      try {
+        /* const response = await axios.post('http://localhost:3000/auth/login', formData)
+
+        // Suponiendo que el backend devuelve un token:
+        const token = response.data.token
+        localStorage.setItem('token', token) // Guardar sesión */
+
+        console.log('Login exitoso ✅')
+
+        // 🔥 Redirigir a la vista de usuario (ruta definida en tu router)
+        this.$router.push('/usuario')
+      } catch (error) {
+        console.error('Error de autenticación ❌', error)
+        alert('Credenciales incorrectas 😕')
+      } finally {
+        this.loading = false // ✅ detener spinner ocurra lo que ocurra
+      }
     },
   },
 }
@@ -95,7 +121,6 @@ export default {
 .container-login {
   max-width: 400px;
   margin: auto;
-  padding-top: 50px;
 }
 .btn-login {
   width: 100%;
