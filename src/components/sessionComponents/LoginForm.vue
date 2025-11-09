@@ -45,6 +45,8 @@
 </template>
 
 <script>
+import api from '@/services/garage-back-api'
+
 export default {
   data: () => ({
     valid: false,
@@ -90,22 +92,32 @@ export default {
       const formData = {
         email: this.email,
         password: this.password,
-        checkbox: this.checkbox,
       }
       console.log('Formulario válido ✅', formData)
       //comprobar con backend
 
       try {
-        /* const response = await axios.post('http://localhost:3000/auth/login', formData)
-
-        // Suponiendo que el backend devuelve un token:
-        const token = response.data.token
-        localStorage.setItem('token', token) // Guardar sesión */
-
-        console.log('Login exitoso ✅')
-
-        // 🔥 Redirigir a la vista de usuario (ruta definida en tu router)
-        this.$router.push('/usuario')
+        const access_login = await api.login(formData.email, formData.password)
+        console.log('Respuesta del servidor:', access_login)
+        if (access_login == true) {
+          console.log('Login exitoso ✅')
+          // 🔥 Redirigir a la vista de usuario (ruta definida en tu router)
+          const userData = await api.perfil()
+          console.log('Datos del usuario obtenidos', userData.email, userData.name, userData.rol)
+          localStorage.setItem('userEmail', userData.email)
+          localStorage.setItem('userName', userData.name)
+          localStorage.setItem('userRol', userData.rol)
+          console.log('Rol del usuario:', userData.rol, typeof userData.rol)
+          if (userData.rol == 'ADMIN') {
+            this.$router.push('/admin')
+          } else if (userData.rol == 'CLIENT') {
+            this.$router.push('/usuario')
+          } else if (userData.rol == 'MECHANIC') {
+            this.$router.push('/mechanic')
+          }
+        } else {
+          alert('Credenciales incorrectas 😕')
+        }
       } catch (error) {
         console.error('Error de autenticación ❌', error)
         alert('Credenciales incorrectas 😕')

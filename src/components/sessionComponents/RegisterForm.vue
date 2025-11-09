@@ -52,7 +52,12 @@
           </v-checkbox>
         </v-col>
         <v-col md="12" cols="12">
-          <v-btn class="btn-register" @click="handleSubmit">Registrarse</v-btn>
+          <v-btn class="btn-register" @click="handleSubmit" :disabled="loading">
+            <template v-if="loading">
+              <v-progress-circular indeterminate size="20"></v-progress-circular>
+            </template>
+            <template v-else> Registrarse </template>
+          </v-btn>
         </v-col>
       </v-row>
     </v-form>
@@ -60,9 +65,12 @@
 </template>
 
 <script>
+import api from '@/services/garage-back-api'
+
 export default {
   data: () => ({
     valid: false,
+    loading: false,
     name: '',
     nameRules: [
       (value) => {
@@ -91,9 +99,16 @@ export default {
         return 'Password is required.'
       },
       (value) => {
-        if (value.length >= 6) return true
+        if (value.length >= 8) return true
 
-        return 'Password must be at least 6 characters.'
+        return 'Password must be at least 8 characters.'
+      },
+      (value) => {
+        // Regla para mayúscula, minúscula, número y símbolo
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/
+        if (regex.test(value)) return true
+
+        return 'Password must include uppercase, lowercase, number, and symbol.'
       },
     ],
     passwordConfirmed: '',
@@ -112,13 +127,24 @@ export default {
         alert('Las contraseñas no coinciden ❌')
         return
       }
+      this.loading = true // ⏳ Mostrar spinner
       //Llamada a axios para registrarse e iniciar sesión
       const formData = {
+        name: this.name,
         email: this.email,
         password: this.password,
       }
-      console.log('Formulario válido ✅', formData)
-      alert('Registro exitoso ✅')
+      const registroUsuario = await api.register(formData.name, formData.email, formData.password)
+      console.log(registroUsuario)
+      if (registroUsuario) {
+        this.$router.push('/login')
+      } else if (!registroUsuario) {
+        alert('La cuenta ya esta registrada ‼️‼️')
+        this.loading = false // ⏳ Ocultar spinner
+        return
+      }
+      this.loading = false // ⏳ Ocultar spinner
+      alert('Registro exitoso, valída la cuenta con tu correo ✅')
     },
   },
 }
