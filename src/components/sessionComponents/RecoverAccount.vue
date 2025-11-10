@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import api from '@/services/garage-back-api'
 export default {
   data: () => ({
     valid: false,
@@ -62,7 +63,9 @@ export default {
       //comprobar con backend
 
       try {
-        alert('Te llegara un correo ✅')
+        const respuestaValida = await api.recuperarCuenta(this.email)
+        console.log('Respuesta del servidor:', respuestaValida)
+        alert('Si tu correo esta registrado, te llegara un link a tu E-mail ✅')
 
         // 🔥 Redirigir a la vista de usuario (ruta definida en tu router)
       } catch (error) {

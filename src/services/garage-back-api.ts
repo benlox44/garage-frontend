@@ -54,6 +54,16 @@ const api = {
       return null
     }
   },
+  async recuperarCuenta(email: string) {
+    try {
+      const response = await http.post('/auth/request-unlock', { email })
+      console.log('Respuesta de recuperar cuenta:', response.data)
+      return true
+    } catch (error) {
+      console.error('Error al recuperar cuenta:', error)
+      return false
+    }
+  },
 
   logout() {
     localStorage.removeItem('token')

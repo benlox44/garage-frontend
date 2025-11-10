@@ -71,9 +71,9 @@ export default {
         return 'Password is required.'
       },
       (value) => {
-        if (value.length >= 6) return true
+        if (value.length >= 8) return true
 
-        return 'Password must be at least 6 characters.'
+        return 'Password must be at least 8 characters.'
       },
     ],
     checkbox: false,
