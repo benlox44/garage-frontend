@@ -11,13 +11,13 @@
               class="btn-auth"
               :class="{ active: activeForm === 'login' }"
               @click="activeForm = 'login'"
-              >Sign in</v-btn
+              >Iniciar Sesión</v-btn
             >
             <v-btn
               class="btn-auth"
               :class="{ active: activeForm === 'register' }"
               @click="activeForm = 'register'"
-              >Sign up</v-btn
+              >Registrarse</v-btn
             >
           </div>
           <v-card-text class="mt-4"
@@ -28,13 +28,13 @@
               class="btn-auth"
               :class="{ active: activeForm === 'forgot' }"
               @click="activeForm = 'forgot'"
-              >Forgot your password</v-btn
+              >Olvidaste tu contraseña?</v-btn
             >
             <v-btn
               class="btn-auth"
               :class="{ active: activeForm === 'recover' }"
               @click="activeForm = 'recover'"
-              >Recover acount</v-btn
+              >Recuperar cuenta</v-btn
             >
           </div>
         </v-card>
