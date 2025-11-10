@@ -26,16 +26,9 @@
         <nav class="flex flex-row gap-3 sm:gap-4 w-full sm:w-auto">
           <RouterLink 
             to="/login" 
-            class="flex-1 sm:flex-none group relative px-4 sm:px-6 py-2 sm:py-2.5 bg-linear-to-r from-[#3AAFA9] to-[#2B7A78] text-[#17252A] font-bold rounded-xl hover:shadow-lg hover:shadow-[#3AAFA9]/50 transition-all duration-300 text-center text-sm sm:text-base overflow-hidden hover:scale-105"
-          >
-            <span class="relative z-10">Iniciar Sesión</span>
-            <div class="absolute inset-0 bg-linear-to-r from-[#DEF2F1] to-[#3AAFA9] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </RouterLink>
-          <RouterLink 
-            to="/register" 
             class="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 border-2 border-[#3AAFA9] text-[#DEF2F1] font-bold rounded-xl hover:bg-[#3AAFA9]/20 backdrop-blur-sm transition-all duration-300 text-center text-sm sm:text-base hover:scale-105 hover:shadow-lg hover:shadow-[#3AAFA9]/30"
           >
-            Registrarse
+            Iniciar Sesión/Registrarse
           </RouterLink>
         </nav>
       </div>

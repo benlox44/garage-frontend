@@ -49,17 +49,11 @@ import HeaderHomeView from '@/components/homeView/headerHomeView.vue';
           <!-- CTA Buttons -->
           <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8 animate-slide-up" style="animation-delay: 0.4s;">
             <RouterLink 
-              to="/register" 
+              to="/login" 
               class="group px-8 py-4 bg-linear-to-r from-[#3AAFA9] to-[#2B7A78] text-[#17252A] font-bold rounded-xl hover:shadow-xl hover:shadow-[#3AAFA9]/50 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 text-center relative overflow-hidden"
             >
               <span class="relative z-10">Comienza Ahora</span>
               <div class="absolute inset-0 bg-linear-to-r from-[#DEF2F1] to-[#3AAFA9] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </RouterLink>
-            <RouterLink 
-              to="/login" 
-              class="px-8 py-4 border-2 border-[#3AAFA9] text-[#DEF2F1] font-bold rounded-xl hover:bg-[#3AAFA9]/10 backdrop-blur-sm transition-all duration-300 hover:scale-105 text-center hover:shadow-lg hover:shadow-[#3AAFA9]/30"
-            >
-              Iniciar Sesión
             </RouterLink>
           </div>
         </div>
