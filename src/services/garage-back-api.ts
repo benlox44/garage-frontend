@@ -68,6 +68,48 @@ const api = {
   logout() {
     localStorage.removeItem('token')
   },
+
+  // ===== ADMIN METHODS =====
+  async getAllUsers() {
+    try {
+      const response = await http.get('/users')
+      return response.data.data
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error)
+      return []
+    }
+  },
+
+  async deleteUser(userId: number) {
+    try {
+      await http.delete(`/users/${userId}`)
+      return true
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error)
+      return false
+    }
+  },
+
+  async updateUserRole(userId: number, newRole: string) {
+    try {
+      await http.patch(`/users/${userId}/role`, { role: newRole })
+      return true
+    } catch (error) {
+      console.error('Error al actualizar rol:', error)
+      return false
+    }
+  },
+
+  async createMechanic(name: string, email: string, password: string) {
+    try {
+      const response = await http.post('/users/create-mechanic', { name, email, password })
+      return { success: true, message: response.data.message }
+    } catch (error: any) {
+      console.error('Error al crear mecánico:', error)
+      const errorMessage = error.response?.data?.message || 'Error al crear mecánico'
+      return { success: false, message: errorMessage }
+    }
+  },
 }
 
 export default api

@@ -28,8 +28,22 @@
             to="/admin"
             class="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 border-2 border-[#3AAFA9] text-[#DEF2F1] font-bold rounded-xl hover:bg-[#3AAFA9]/20 backdrop-blur-sm transition-all duration-300 text-center text-sm sm:text-base hover:scale-105 hover:shadow-lg hover:shadow-[#3AAFA9]/30"
           >
-            Iniciar Sesión/Registrarse
+            Ver usuarios
           </RouterLink>
+
+          <RouterLink
+            to="/admin"
+            class="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 border-2 border-[#3AAFA9] text-[#DEF2F1] font-bold rounded-xl hover:bg-[#3AAFA9]/20 backdrop-blur-sm transition-all duration-300 text-center text-sm sm:text-base hover:scale-105 hover:shadow-lg hover:shadow-[#3AAFA9]/30"
+          >
+            Modificar perfil
+          </RouterLink>
+
+          <button
+            @click="handleLogout"
+            class="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 border-2 border-red-500 text-red-300 font-bold rounded-xl hover:bg-red-500/20 backdrop-blur-sm transition-all duration-300 text-center text-sm sm:text-base hover:scale-105 hover:shadow-lg hover:shadow-red-500/30"
+          >
+            Cerrar sesión
+          </button>
         </nav>
       </div>
     </div>
@@ -38,7 +52,17 @@
 
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+import api from '@/services/garage-back-api'
+
+const router = useRouter()
+
+const handleLogout = () => {
+  if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+    api.logout()
+    router.push('/')
+  }
+}
 </script>
 
 <style scoped>
