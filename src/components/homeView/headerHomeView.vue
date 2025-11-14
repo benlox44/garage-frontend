@@ -21,7 +21,9 @@
             <span class="text-[10px] sm:text-xs text-red-500 font-medium tracking-wide">Sistema de Gestión</span>
           </div>
         </RouterLink>
-        
+
+        <SWITCH />
+
         <!-- Navigation -->
         <nav class="flex flex-row gap-3 sm:gap-4 w-full sm:w-auto">
           <RouterLink 
@@ -38,6 +40,7 @@
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import SWITCH from './switch.vue';
 </script>
 
 <style scoped>
