@@ -1,6 +1,6 @@
 <template>
   <v-container class="container-forgot-password" align="center">
-    <h1 style="margin-bottom: 60px">Restaura tu cuenta, ingresa tu correo!!🤯🤯</h1>
+    <h1 class="recover-title">Restaura tu cuenta, ingresa tu correo!!</h1>
     <v-form v-model="valid" ref="form">
       <v-row>
         <v-col md="12" cols="12">
@@ -70,7 +70,7 @@ export default {
         // 🔥 Redirigir a la vista de usuario (ruta definida en tu router)
       } catch (error) {
         console.error('El correo es invalido ❌', error)
-        alert('El correo es incorrecto 😕')
+        alert('El correo es incorrecto')
       } finally {
         this.loading = false // ✅ detener spinner ocurra lo que ocurra
       }
@@ -82,20 +82,67 @@ export default {
 <style scoped>
 .container-forgot-password {
   max-width: 400px;
+  width: 100%;
   margin: auto;
+  padding: 0 10px;
 }
+
+.recover-title {
+  margin-bottom: 40px;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+  font-size: 1.2rem;
+}
+
 .btn-forgot-password {
   width: 100%;
   border-radius: 8px;
-  background-color: #17252a;
-  color: #def2f1;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: #ffffff;
   transition: 0.25s ease;
   text-transform: uppercase;
   letter-spacing: 1.5px;
+  border: none;
+  padding: 12px;
+  font-size: 0.9rem;
 }
+
 .btn-forgot-password:hover {
-  background-color: #2b7a78; /* tono más claro del botón */
-  transform: translateY(-3px); /* efecto elevar */
-  box-shadow: 0px 6px 14px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+  transform: translateY(-3px);
+  box-shadow: 0px 6px 20px rgba(239, 68, 68, 0.6);
+}
+
+.container-forgot-password :deep(.v-label) {
+  color: #e5e5e5 !important;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .recover-title {
+    margin-bottom: 60px;
+    font-size: 1.4rem;
+  }
+
+  .btn-forgot-password {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-forgot-password {
+    padding: 0 5px;
+  }
+
+  .recover-title {
+    font-size: 1rem;
+    margin-bottom: 30px;
+  }
+
+  .btn-forgot-password {
+    padding: 10px;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
 }
 </style>

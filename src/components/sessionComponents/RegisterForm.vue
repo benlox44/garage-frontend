@@ -1,7 +1,7 @@
 <template>
-  <h1>Registrate ingresando tus datos!!🧐🤖</h1>
   <v-container class="container-register">
-    <v-form v-model="valid" ref="form">
+    <h1 class="register-title">Registrate ingresando tus datos!!</h1>
+    <v-form v-model="valid" ref="form" class="form-wrapper">
       <v-row>
         <v-col md="5" cols="12">
           <v-text-field
@@ -140,10 +140,10 @@ export default {
         this.$router.push('/login')
       } else if (!registroUsuario) {
         alert('La cuenta ya esta registrada ‼️‼️')
-        this.loading = false // ⏳ Ocultar spinner
+        this.loading = false // Ocultar spinner
         return
       }
-      this.loading = false // ⏳ Ocultar spinner
+      this.loading = false // Ocultar spinner
       alert('Registro exitoso, valída la cuenta con tu correo ✅')
     },
   },
@@ -152,21 +152,95 @@ export default {
 
 <style scoped>
 .container-register {
-  max-width: 400px;
+  max-width: 500px;
+  width: 100%;
   margin: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
+.form-wrapper {
+  width: 100%;
+}
+
+.register-title {
+  width: 100%;
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
 .btn-register {
   width: 100%;
   border-radius: 8px;
-  background-color: #17252a;
-  color: #def2f1;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: #ffffff;
   transition: 0.25s ease;
   text-transform: uppercase;
   letter-spacing: 1.5px;
+  border: none;
+  padding: 12px;
+  font-size: 0.9rem;
 }
+
 .btn-register:hover {
-  background-color: #2b7a78; /* tono más claro del botón */
-  transform: translateY(-3px); /* efecto elevar */
-  box-shadow: 0px 6px 14px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+  transform: translateY(-3px);
+  box-shadow: 0px 6px 20px rgba(239, 68, 68, 0.6);
+}
+
+.btn-register:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.container-register :deep(.v-label) {
+  color: #e5e5e5 !important;
+}
+
+.container-register :deep(.v-checkbox-label) {
+  color: #ffffff !important;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .register-title {
+    margin-bottom: 30px;
+    font-size: 1.5rem;
+  }
+
+  .btn-register {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-register {
+    padding: 0 5px;
+  }
+
+  .register-title {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+
+  .btn-register {
+    padding: 10px;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+
+  .container-register :deep(.v-text-field) {
+    font-size: 0.9rem;
+  }
+
+  .container-register :deep(.v-col) {
+    padding: 8px 12px;
+  }
 }
 </style>

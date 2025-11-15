@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-black/95 backdrop-blur-md shadow-lg shadow-black/50 shrink-0 sticky top-0 z-50 border-b border-red-600/30">
+  <header class="bg-white/95 dark:bg-black/95 backdrop-blur-md shadow-lg shadow-gray-300/50 dark:shadow-black/50 shrink-0 sticky top-0 z-50 border-b border-red-600/20 dark:border-red-600/30">
     <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 xl:px-24 2xl:px-32 py-3 sm:py-4">
       <div class="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
         <!-- Logo -->
@@ -15,20 +15,21 @@
             </div>
           </div>
           <div class="flex flex-col">
-            <h1 class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white group-hover:text-gray-200 transition-colors duration-300">
+            <h1 class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
               GarageConnect
             </h1>
             <span class="text-[10px] sm:text-xs text-red-500 font-medium tracking-wide">Sistema de Gestión</span>
           </div>
         </RouterLink>
 
-        <SWITCH />
+        <!-- Theme Toggle -->
+        <ThemeToggle />
 
         <!-- Navigation -->
         <nav class="flex flex-row gap-3 sm:gap-4 w-full sm:w-auto">
           <RouterLink 
             to="/login" 
-            class="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 border-2 border-red-600 text-white font-bold rounded-xl hover:bg-red-600/20 backdrop-blur-sm transition-all duration-300 text-center text-sm sm:text-base hover:scale-105 hover:shadow-lg hover:shadow-red-600/30"
+            class="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 border-2 border-red-600 text-red-600 dark:text-white font-bold rounded-xl hover:bg-red-600/20 backdrop-blur-sm transition-all duration-300 text-center text-sm sm:text-base hover:scale-105 hover:shadow-lg hover:shadow-red-600/30"
           >
             Iniciar Sesión/Registrarse
           </RouterLink>
@@ -40,7 +41,7 @@
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import SWITCH from './switch.vue';
+import ThemeToggle from '@/components/shared/ThemeToggle.vue'
 </script>
 
 <style scoped>

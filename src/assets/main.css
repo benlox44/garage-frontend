@@ -1,3 +1,89 @@
 /* Tailwind */
 @import 'tailwindcss';
 @import './base.css';
+
+/* Tema personalizado - Paleta: Negro, Rojo y Blanco */
+:root {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f5f5f5;
+  --color-bg-tertiary: #e5e5e5;
+  --color-text-primary: #000000;
+  --color-text-secondary: #1f2937;
+  --color-text-muted: #6b7280;
+  --color-accent: #dc2626;
+  --color-accent-hover: #b91c1c;
+  --color-border: #e5e7eb;
+}
+
+.dark {
+  --color-bg-primary: #000000;
+  --color-bg-secondary: #1a1a1a;
+  --color-bg-tertiary: #262626;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #e5e5e5;
+  --color-text-muted: #9ca3af;
+  --color-accent: #ef4444;
+  --color-accent-hover: #dc2626;
+  --color-border: #374151;
+}
+
+/* Transiciones suaves para el cambio de tema */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Animaciones personalizadas */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+/* Estilos globales para Vuetify en tema oscuro */
+.dark .v-field {
+  background-color: rgba(26, 26, 26, 0.9) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+.dark .v-field--variant-solo {
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1) !important;
+}
+
+.dark .v-field__input {
+  color: #ffffff !important;
+}
+
+.dark .v-label {
+  color: #e5e5e5 !important;
+}
+
+.dark .v-checkbox .v-selection-control__input {
+  color: #ef4444 !important;
+}
+
+.dark .v-messages__message {
+  color: #ef4444 !important;
+}
+

@@ -1,8 +1,8 @@
 <template>
   <v-container class="container-login">
-    <h1 style="margin-bottom: 30px">Inicia sesión en tu cuenta!!👌</h1>
-    <v-form v-model="valid" ref="form">
-      <v-row>
+    <h1 class="login-title">Inicia sesión en tu cuenta!!👌</h1>
+    <v-form v-model="valid" ref="form" class="form-wrapper">
+      <v-row justify="center">
         <v-col md="12" cols="12">
           <v-text-field
             v-model="email"
@@ -24,7 +24,7 @@
             required
           ></v-text-field>
         </v-col>
-        <v-col md="12" cols="12">
+        <v-col md="12" cols="12" class="checkbox-wrapper">
           <v-checkbox v-model="checkbox" :rules="checkboxRules" required>
             <template v-slot:label>
               <span>Recordar inicio de sesión</span>
@@ -39,6 +39,12 @@
             <template v-else> Ingresar </template>
           </v-btn>
         </v-col>
+        <v-col md="12" cols="12" class="forgot-password-wrapper">
+          <a @click="$emit('forgot-password')" class="forgot-link">
+            <v-icon size="small">mdi-lock-question</v-icon>
+            ¿Olvidaste tu contraseña?
+          </a>
+        </v-col>
       </v-row>
     </v-form>
   </v-container>
@@ -48,37 +54,41 @@
 import api from '@/services/garage-back-api'
 
 export default {
-  data: () => ({
-    valid: false,
-    email: '',
-    emailRules: [
-      (value) => {
-        if (value) return true
+  emits: ['login-failed', 'account-blocked', 'forgot-password'],
+  data() {
+    return {
+      valid: false,
+      email: '',
+      emailRules: [
+        (value) => {
+          if (value) return true
 
-        return 'E-mail is required.'
-      },
-      (value) => {
-        if (/.+@.+\..+/.test(value)) return true
+          return 'E-mail is required.'
+        },
+        (value) => {
+          if (/.+@.+\..+/.test(value)) return true
 
-        return 'E-mail must be valid.'
-      },
-    ],
-    password: '',
-    passwordRules: [
-      (value) => {
-        if (value) return true
+          return 'E-mail must be valid.'
+        },
+      ],
+      password: '',
+      passwordRules: [
+        (value) => {
+          if (value) return true
 
-        return 'Password is required.'
-      },
-      (value) => {
-        if (value.length >= 8) return true
+          return 'Password is required.'
+        },
+        (value) => {
+          if (value.length >= 8) return true
 
-        return 'Password must be at least 8 characters.'
-      },
-    ],
-    checkbox: false,
-    loading: false,
-  }),
+          return 'Password must be at least 8 characters.'
+        },
+      ],
+      checkbox: false,
+      loading: false,
+      failedAttempts: 0,
+    }
+  },
   methods: {
     async handleSubmit() {
       const isValid = await this.$refs.form.validate()
@@ -87,7 +97,7 @@ export default {
         console.log('Formulario inválido ❌')
         return
       }
-      this.loading = true // ⏳ inicia spinner
+      this.loading = true // inicia spinner
       //Llamada a axios para iniciar sesión
       const formData = {
         email: this.email,
@@ -101,7 +111,7 @@ export default {
         console.log('Respuesta del servidor:', access_login)
         if (access_login == true) {
           console.log('Login exitoso ✅')
-          // 🔥 Redirigir a la vista de usuario (ruta definida en tu router)
+          // Redirigir a la vista de usuario (ruta definida en tu router)
           const userData = await api.perfil()
           console.log('Datos del usuario obtenidos', userData.email, userData.name, userData.rol)
           localStorage.setItem('userEmail', userData.email)
@@ -116,11 +126,32 @@ export default {
             this.$router.push('/mechanic')
           }
         } else {
-          alert('Credenciales incorrectas 😕')
+          this.failedAttempts++
+          this.$emit('login-failed')
+          
+          if (this.failedAttempts >= 3) {
+            // Emitir evento de cuenta bloqueada después de 3 intentos
+            this.$emit('account-blocked')
+            alert('Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.')
+          } else {
+            alert(`Credenciales incorrectas (Intento ${this.failedAttempts}/3)`)
+          }
         }
       } catch (error) {
         console.error('Error de autenticación ❌', error)
-        alert('Credenciales incorrectas 😕')
+        this.failedAttempts++
+        this.$emit('login-failed')
+        
+        // Verificar si el error indica cuenta bloqueada
+        if (error.response?.status === 423 || error.response?.data?.message?.includes('bloqueada')) {
+          this.$emit('account-blocked')
+          alert('Tu cuenta está bloqueada. Por favor, utiliza la opción de recuperar cuenta.')
+        } else if (this.failedAttempts >= 3) {
+          this.$emit('account-blocked')
+          alert('Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.')
+        } else {
+          alert(`Credenciales incorrectas (Intento ${this.failedAttempts}/3)`)
+        }
       } finally {
         this.loading = false // ✅ detener spinner ocurra lo que ocurra
       }
@@ -131,21 +162,130 @@ export default {
 
 <style scoped>
 .container-login {
-  max-width: 400px;
-  margin: auto;
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
+.login-title {
+  margin-bottom: 30px;
+  margin-top: 0;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+  font-size: 1.4rem;
+  text-align: center;
+  font-weight: 700;
+  width: 100%;
+}
+
+.form-wrapper {
+  width: 100%;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.container-login :deep(.v-row) {
+  width: 100%;
+  margin: 0;
+}
+
+.container-login :deep(.v-col) {
+  padding: 8px 12px;
+}
+
 .btn-login {
   width: 100%;
   border-radius: 8px;
-  background-color: #17252a;
-  color: #def2f1;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: #ffffff;
   transition: 0.25s ease;
   text-transform: uppercase;
   letter-spacing: 1.5px;
+  border: none;
+  padding: 12px;
+  font-size: 0.9rem;
 }
+
 .btn-login:hover {
-  background-color: #2b7a78; /* tono más claro del botón */
-  transform: translateY(-3px); /* efecto elevar */
-  box-shadow: 0px 6px 14px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+  transform: translateY(-3px);
+  box-shadow: 0px 6px 20px rgba(239, 68, 68, 0.6);
+}
+
+.btn-login:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Forgot password link */
+.forgot-password-wrapper {
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: -8px;
+}
+
+.forgot-link {
+  color: #ef4444;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  color: #dc2626;
+  text-decoration: underline;
+}
+
+.container-login :deep(.v-label) {
+  color: #e5e5e5 !important;
+}
+
+.container-login :deep(.v-checkbox-label) {
+  color: #ffffff !important;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .login-title {
+    margin-bottom: 30px;
+    font-size: 1.5rem;
+  }
+
+  .btn-login {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-login {
+    padding: 0 5px;
+  }
+
+  .login-title {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+
+  .btn-login {
+    padding: 10px;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+
+  .container-login :deep(.v-text-field) {
+    font-size: 0.9rem;
+  }
 }
 </style>

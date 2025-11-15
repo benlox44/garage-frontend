@@ -6,7 +6,7 @@ import HeaderHomeView from '@/components/homeView/headerHomeView.vue';
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-gradient-to-br from-black via-gray-900 to-black text-white overflow-hidden">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-gray-900 dark:to-black text-gray-900 dark:text-white overflow-hidden transition-colors duration-300">
     <!-- Header -->
     <HeaderHomeView />
 
@@ -22,12 +22,12 @@ import HeaderHomeView from '@/components/homeView/headerHomeView.vue';
         <!-- Hero Content -->
         <div class="text-center space-y-8">
           <!-- Badge -->
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-red-900/30 backdrop-blur-sm rounded-full border border-red-600/30 mb-4 animate-fade-in">
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 backdrop-blur-sm rounded-full border border-red-600/50 dark:border-red-600/30 mb-4 animate-fade-in">
             <span class="relative flex h-3 w-3">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
             </span>
-            <span class="text-sm text-white font-medium">Sistema de Gestión para tu Taller Automotriz</span>
+            <span class="text-sm text-gray-900 dark:text-white font-medium">Sistema de Gestión para tu Taller Automotriz</span>
           </div>
 
           <!-- Hero Title -->
@@ -36,11 +36,11 @@ import HeaderHomeView from '@/components/homeView/headerHomeView.vue';
               Gestiona tu Taller
             </span>
             <br />
-            <span class="text-white">y tus Clientes</span>
+            <span class="text-gray-900 dark:text-white">y tus Clientes</span>
           </h1>
 
           <!-- Hero Subtitle -->
-          <p class="text-gray-300 max-w-3xl mx-auto text-base sm:text-lg lg:text-xl leading-relaxed animate-slide-up" style="animation-delay: 0.2s;">
+          <p class="text-gray-700 dark:text-gray-300 max-w-3xl mx-auto text-base sm:text-lg lg:text-xl leading-relaxed animate-slide-up" style="animation-delay: 0.2s;">
             La solución completa para administrar citas, vehículos y clientes de tu servicio técnico de manera 
             <span class="text-red-500 font-semibold">eficiente</span>, 
             <span class="text-red-500 font-semibold">organizada</span> y <span class="text-red-500 font-semibold">profesional</span>.
