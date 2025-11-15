@@ -187,9 +187,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 50%, #ffffff 100%);
   transition: background 0.3s ease;
   padding: 40px 20px;
+}
+
+.dark .layout-row {
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
 }
 
 .center-panel {
@@ -204,13 +208,19 @@ export default {
 .auth-card {
   width: 100%;
   max-height: 90vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
-  border: 2px solid rgba(239, 68, 68, 0.3);
-  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2);
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+  border: 2px solid rgba(220, 38, 38, 0.3);
+  box-shadow: 0 8px 32px rgba(220, 38, 38, 0.2);
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.dark .auth-card {
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2);
 }
 
 /* Header del card */
@@ -242,6 +252,11 @@ export default {
 /* Tabs */
 .tabs-container {
   display: flex;
+  border-bottom: 2px solid rgba(220, 38, 38, 0.2);
+  background: rgba(245, 245, 245, 0.5);
+}
+
+.dark .tabs-container {
   border-bottom: 2px solid rgba(239, 68, 68, 0.2);
   background: rgba(26, 26, 26, 0.5);
 }
@@ -249,7 +264,7 @@ export default {
 .tab-btn {
   flex: 1;
   padding: 16px 20px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.6);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -258,11 +273,26 @@ export default {
 }
 
 .tab-btn:hover {
+  background: rgba(220, 38, 38, 0.1);
+  color: #000000;
+}
+
+.tab-btn.active {
+  background: rgba(220, 38, 38, 0.2);
+  color: #000000;
+  border-bottom: 3px solid #dc2626;
+}
+
+.dark .tab-btn {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark .tab-btn:hover {
   background: rgba(239, 68, 68, 0.1);
   color: #ffffff;
 }
 
-.tab-btn.active {
+.dark .tab-btn.active {
   background: rgba(239, 68, 68, 0.2);
   color: #ffffff;
   border-bottom: 3px solid #ef4444;

@@ -87,3 +87,29 @@
   color: #ef4444 !important;
 }
 
+/* Estilos globales para Vuetify en tema claro */
+.v-field {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(220, 38, 38, 0.3) !important;
+}
+
+.v-field--variant-solo {
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1) !important;
+}
+
+.v-field__input {
+  color: #000000 !important;
+}
+
+.v-label {
+  color: #1f2937 !important;
+}
+
+.v-checkbox .v-selection-control__input {
+  color: #dc2626 !important;
+}
+
+.v-messages__message {
+  color: #dc2626 !important;
+}
+

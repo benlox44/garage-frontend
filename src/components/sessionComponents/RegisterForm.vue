@@ -168,11 +168,16 @@ export default {
 .register-title {
   width: 100%;
   text-align: center;
-  color: #ffffff;
-  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+  color: #000000;
+  text-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
   margin-bottom: 20px;
   font-size: 1.3rem;
   font-weight: 700;
+}
+
+.dark .register-title {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
 }
 
 .btn-register {
@@ -200,10 +205,18 @@ export default {
 }
 
 .container-register :deep(.v-label) {
-  color: #e5e5e5 !important;
+  color: #1f2937 !important;
 }
 
 .container-register :deep(.v-checkbox-label) {
+  color: #000000 !important;
+}
+
+.dark .container-register :deep(.v-label) {
+  color: #e5e5e5 !important;
+}
+
+.dark .container-register :deep(.v-checkbox-label) {
   color: #ffffff !important;
 }
 

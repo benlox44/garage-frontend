@@ -174,12 +174,17 @@ export default {
 .login-title {
   margin-bottom: 30px;
   margin-top: 0;
-  color: #ffffff;
-  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+  color: #000000;
+  text-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
   font-size: 1.4rem;
   text-align: center;
   font-weight: 700;
   width: 100%;
+}
+
+.dark .login-title {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
 }
 
 .form-wrapper {
@@ -232,7 +237,7 @@ export default {
 }
 
 .forgot-link {
-  color: #ef4444;
+  color: #dc2626;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -244,15 +249,31 @@ export default {
 }
 
 .forgot-link:hover {
-  color: #dc2626;
+  color: #b91c1c;
   text-decoration: underline;
 }
 
+.dark .forgot-link {
+  color: #ef4444;
+}
+
+.dark .forgot-link:hover {
+  color: #dc2626;
+}
+
 .container-login :deep(.v-label) {
-  color: #e5e5e5 !important;
+  color: #1f2937 !important;
 }
 
 .container-login :deep(.v-checkbox-label) {
+  color: #000000 !important;
+}
+
+.dark .container-login :deep(.v-label) {
+  color: #e5e5e5 !important;
+}
+
+.dark .container-login :deep(.v-checkbox-label) {
   color: #ffffff !important;
 }
 
