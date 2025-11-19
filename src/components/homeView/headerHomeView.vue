@@ -1,52 +1,163 @@
 <template>
-  <header class="bg-white/95 dark:bg-black/95 backdrop-blur-md shadow-lg shadow-gray-300/50 dark:shadow-black/50 shrink-0 sticky top-0 z-50 border-b border-red-600/20 dark:border-red-600/30">
-    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 xl:px-24 2xl:px-32 py-3 sm:py-4">
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+  <v-app-bar
+    :style="{ 
+      background: isDark ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+      borderBottom: isDark ? '1px solid rgba(220, 38, 38, 0.3)' : '1px solid rgba(220, 38, 38, 0.2)',
+      backdropFilter: 'blur(12px)'
+    }"
+    :elevation="8"
+    app
+    scroll-behavior="elevate"
+    class="header-bar"
+  >
+    <v-container fluid class="px-4 px-sm-6 px-lg-16 px-xl-24 py-2">
+      <v-row align="center" justify="space-between" no-gutters>
         <!-- Logo -->
-        <RouterLink to="/" class="flex items-center space-x-3 group">
-          <div class="relative">
-            <!-- Icon Background Glow -->
-            <div class="absolute inset-0 bg-red-600/30 rounded-xl blur-md group-hover:bg-red-600/50 transition-all duration-300"></div>
-            <!-- Icon -->
-            <div class="relative bg-gradient-to-br from-red-600 to-red-700 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
-              <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-              </svg>
+        <v-col cols="auto" class="d-flex align-center">
+          <RouterLink to="/" class="d-flex align-center logo-link text-decoration-none">
+            <div class="position-relative mr-2 mr-sm-3">
+              <!-- Icon Background Glow -->
+              <div class="glow-effect"></div>
+              <!-- Icon -->
+              <v-avatar
+                :size="$vuetify.display.xs ? 40 : $vuetify.display.sm ? 44 : 48"
+                class="logo-avatar"
+                style="background: linear-gradient(135deg, rgb(220 38 38), rgb(185 28 28));"
+              >
+                <v-icon 
+                  color="white" 
+                  :size="$vuetify.display.xs ? 22 : $vuetify.display.sm ? 26 : 28"
+                >
+                  mdi-tune-variant
+                </v-icon>
+              </v-avatar>
             </div>
-          </div>
-          <div class="flex flex-col">
-            <h1 class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
-              GarageConnect
-            </h1>
-            <span class="text-[10px] sm:text-xs text-red-500 font-medium tracking-wide">Sistema de Gestión</span>
-          </div>
-        </RouterLink>
-
-        <!-- Theme Toggle -->
-        <ThemeToggle />
-
-        <!-- Navigation -->
-        <nav class="flex flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-          <RouterLink 
-            to="/login" 
-            class="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 border-2 border-red-600 text-red-600 dark:text-white font-bold rounded-xl hover:bg-red-600/20 backdrop-blur-sm transition-all duration-300 text-center text-sm sm:text-base hover:scale-105 hover:shadow-lg hover:shadow-red-600/30"
-          >
-            Iniciar Sesión/Registrarse
+            <div class="d-flex flex-column">
+              <h1 
+                :class="[
+                  'logo-text',
+                  $vuetify.display.xs ? 'text-h6' : $vuetify.display.sm ? 'text-h5' : 'text-h4',
+                  'font-weight-black',
+                  isDark ? 'text-white' : 'text-grey-darken-4'
+                ]"
+              >
+                GarageConnect
+              </h1>
+              <span 
+                :class="[
+                  'text-red font-weight-medium tracking-wide',
+                  $vuetify.display.xs ? 'text-caption' : 'text-body-2'
+                ]"
+              >
+                Sistema de Gestión
+              </span>
+            </div>
           </RouterLink>
-        </nav>
-      </div>
-    </div>
-  </header>
+        </v-col>
+
+        <v-spacer></v-spacer>
+
+        <!-- Theme Toggle - Hidden on xs, shown on sm+ -->
+        <v-col cols="auto" class="d-none d-sm-flex align-center mr-2 mr-sm-3">
+          <ThemeToggle />
+        </v-col>
+
+        <!-- Navigation Button -->
+        <v-col cols="auto">
+          <v-btn
+            to="/login"
+            variant="outlined"
+            color="red"
+            :size="$vuetify.display.xs ? 'small' : $vuetify.display.sm ? 'default' : 'large'"
+            rounded="xl"
+            class="auth-button font-weight-bold"
+            :style="{ 
+              borderWidth: '2px',
+              backdropFilter: 'blur(4px)'
+            }"
+          >
+            <span class="d-none d-sm-inline">Iniciar Sesión/Registrarse</span>
+            <span class="d-inline d-sm-none">Iniciar Sesión</span>
+          </v-btn>
+        </v-col>
+
+        <!-- Theme Toggle - Only visible on xs -->
+        <v-col cols="auto" class="d-flex d-sm-none align-center ml-2">
+          <ThemeToggle />
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-app-bar>
 </template>
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import ThemeToggle from '@/components/shared/ThemeToggle.vue'
+import { useTheme } from '@/composables/useTheme'
+
+const { isDark } = useTheme()
 </script>
 
 <style scoped>
-/* Animación suave para el sticky header */
-header {
+.header-bar {
   transition: all 0.3s ease-in-out;
+}
+
+.logo-link {
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.glow-effect {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(220, 38, 38, 0.3);
+  border-radius: 12px;
+  filter: blur(12px);
+  transition: all 0.3s;
+}
+
+.logo-link:hover .glow-effect {
+  background-color: rgba(220, 38, 38, 0.5);
+}
+
+.logo-avatar {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.logo-link:hover .logo-avatar {
+  transform: scale(1.1);
+}
+
+.logo-text {
+  transition: color 0.3s ease;
+  line-height: 1.2;
+}
+
+.logo-link:hover .logo-text {
+  opacity: 0.8;
+}
+
+.auth-button {
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.auth-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.3);
+  background-color: rgba(220, 38, 38, 0.1) !important;
+}
+
+.tracking-wide {
+  letter-spacing: 0.05em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 599px) {
+  .logo-text {
+    font-size: 1.1rem !important;
+  }
 }
 </style>

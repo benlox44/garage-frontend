@@ -2,6 +2,11 @@
 @import 'tailwindcss';
 @import './base.css';
 
+/* Configuración de Tailwind v4 para dark mode */
+@theme {
+  --color-*: initial;
+}
+
 /* Tema personalizado - Paleta: Negro, Rojo y Blanco */
 :root {
   --color-bg-primary: #ffffff;
@@ -13,6 +18,16 @@
   --color-accent: #dc2626;
   --color-accent-hover: #b91c1c;
   --color-border: #e5e7eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 .dark {

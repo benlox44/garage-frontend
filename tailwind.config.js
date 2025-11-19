@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class', // Activa el modo oscuro con clase
+  darkMode: 'selector', // Tailwind v4 usa 'selector' en lugar de 'class'
   content: [
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",

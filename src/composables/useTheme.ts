@@ -1,43 +1,51 @@
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useTheme as useVuetifyTheme } from 'vuetify'
+
+// Estado global compartido
+const isDarkRef = ref(true) // Default: tema oscuro
+let initialized = false
 
 export function useTheme() {
   const vuetifyTheme = useVuetifyTheme()
-  const isDark = ref(true) // Default: tema oscuro
+  
+  // Computed para asegurar reactividad
+  const isDark = computed({
+    get: () => isDarkRef.value,
+    set: (val) => { isDarkRef.value = val }
+  })
 
   // Inicializar tema desde localStorage o default
   const initTheme = () => {
+    if (initialized) return
+    
     const savedTheme = localStorage.getItem('theme')
-    isDark.value = savedTheme ? savedTheme === 'dark' : true // Default oscuro
+    isDarkRef.value = savedTheme ? savedTheme === 'dark' : true // Default oscuro
     applyTheme()
+    initialized = true
   }
 
   // Aplicar tema
   const applyTheme = () => {
-    // Tailwind
-    if (isDark.value) {
-      document.documentElement.classList.add('dark')
+    // Tailwind - agregar/remover clase 'dark' en el elemento HTML
+    const htmlElement = document.documentElement
+    if (isDarkRef.value) {
+      htmlElement.classList.add('dark')
     } else {
-      document.documentElement.classList.remove('dark')
+      htmlElement.classList.remove('dark')
     }
 
-    // Vuetify
-    vuetifyTheme.global.name.value = isDark.value ? 'dark' : 'light'
+    // Vuetify - cambiar tema usando el método correcto
+    vuetifyTheme.global.name.value = isDarkRef.value ? 'dark' : 'light'
 
     // Guardar en localStorage
-    localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+    localStorage.setItem('theme', isDarkRef.value ? 'dark' : 'light')
   }
 
   // Toggle tema
   const toggleTheme = () => {
-    isDark.value = !isDark.value
+    isDarkRef.value = !isDarkRef.value
     applyTheme()
   }
-
-  // Observar cambios
-  watch(isDark, applyTheme)
-
-  onMounted(initTheme)
 
   return {
     isDark,
