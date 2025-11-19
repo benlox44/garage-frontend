@@ -184,6 +184,7 @@
                 <!-- Navigation Buttons - Desktop -->
                 <v-col cols="auto" class="d-none d-lg-flex align-center gap-2">
                     <v-btn 
+                        @click="$emit('navigate', 'orders')"
                         variant="outlined" 
                         color="red"
                         size="default"
@@ -197,6 +198,7 @@
                         Ordenes de trabajo
                     </v-btn>
                     <v-btn 
+                        @click="$emit('navigate', 'appointments')"
                         variant="outlined" 
                         color="red"
                         size="default"
@@ -210,6 +212,7 @@
                         Citas
                     </v-btn>
                     <v-btn 
+                        @click="$emit('navigate', 'profile')"
                         variant="outlined" 
                         color="red"
                         size="default"
@@ -258,21 +261,21 @@
                         </template>
 
                         <v-list :style="{ background: isDark ? '#1a1a1a' : '#ffffff' }">
-                            <v-list-item @click="() => {}">
+                            <v-list-item @click="$emit('navigate', 'orders')">
                                 <template v-slot:prepend>
                                     <v-icon color="red">mdi-file-document</v-icon>
                                 </template>
                                 <v-list-item-title>Ordenes de trabajo</v-list-item-title>
                             </v-list-item>
                             
-                            <v-list-item @click="() => {}">
+                            <v-list-item @click="$emit('navigate', 'appointments')">
                                 <template v-slot:prepend>
                                     <v-icon color="red">mdi-calendar-clock</v-icon>
                                 </template>
                                 <v-list-item-title>Citas</v-list-item-title>
                             </v-list-item>
                             
-                            <v-list-item @click="() => {}">
+                            <v-list-item @click="$emit('navigate', 'profile')">
                                 <template v-slot:prepend>
                                     <v-icon color="red">mdi-account</v-icon>
                                 </template>
