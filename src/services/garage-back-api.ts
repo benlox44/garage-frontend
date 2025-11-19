@@ -110,6 +110,75 @@ const api = {
       return { success: false, message: errorMessage }
     }
   },
+
+  // consultar horarios disponibles
+  async getAvailableSchedules() {
+    try {
+      const response = await http.get('/schedules/available')
+      return response.data // Ya viene como { data: [...] }
+    } catch (error) {
+      console.error('Error al obtener horarios disponibles:', error)
+      return { data: [] }
+    }
+  },
+
+  //agendar una cita
+  async createAppointment(appointmentData: {mechanicId: number, vehicleId: number, scheduleId: number, hour: string, date: string, description?: string}) {
+    try {
+      const response = await http.post('/appointments', appointmentData)
+      return { success: true, message: response.data.message, appointmentId: response.data.appointmentId }
+    } catch (error: any) {
+      console.error('Error al crear cita:', error)
+      const errorMessage = error.response?.data?.message || 'Error al crear cita'
+      return { success: false, message: errorMessage }
+    }
+  },
+
+  //Ver mis citas (Cliente)
+  async getMyAppointments() {
+    try {
+      const response = await http.get('/appointments/client')
+      return response.data // Ya viene como { data: [...] }
+    } catch (error) {
+      console.error('Error al obtener mis citas:', error)
+      return { data: [] }
+    }
+  },
+
+  //Ver detalles de una cita
+  async getAppointmentById(appointmentId: number) {
+    try {
+      const response = await http.get(`/appointments/${appointmentId}`)
+      return response.data.data
+    } catch (error) {
+      console.error('Error al obtener detalles de la cita:', error)
+      return null
+    } 
+  },
+
+  //Cancelar una cita
+  async cancelAppointment(appointmentId: number) {
+    try {
+      const response = await http.delete(`/appointments/${appointmentId}`)
+      return { success: true, message: response.data.message }
+    } catch (error: any) {
+      console.error('Error al cancelar la cita:', error)
+      const errorMessage = error.response?.data?.message || 'Error al cancelar la cita'
+      return { success: false, message: errorMessage }
+    }
+  },
+
+  //Obtener vehículos del cliente
+  async getMyVehicles() {
+    try {
+      const response = await http.get('/users/me/vehicles')
+      return response.data // Ya viene como { data: [...] }
+    } catch (error) {
+      console.error('Error al obtener vehículos:', error)
+      return { data: [] }
+    }
+  },
+
 }
 
 export default api
