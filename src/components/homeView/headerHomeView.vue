@@ -14,7 +14,7 @@
       <v-row align="center" justify="space-between" no-gutters>
         <!-- Logo -->
         <v-col cols="auto" class="d-flex align-center">
-          <RouterLink to="/" class="d-flex align-center logo-link text-decoration-none">
+          <div class="d-flex align-center logo-link text-decoration-none">
             <div class="position-relative mr-2 mr-sm-3">
               <!-- Icon Background Glow -->
               <div class="glow-effect"></div>
@@ -52,7 +52,7 @@
                 Sistema de Gestión
               </span>
             </div>
-          </RouterLink>
+          </div>
         </v-col>
 
         <v-spacer></v-spacer>
