@@ -28,19 +28,19 @@
           
           <div class="quick-actions">
             <button @click="currentSection = 'appointments'" class="action-card">
-              <v-icon size="48" color="#3AAFA9">mdi-calendar-clock</v-icon>
+              <v-icon size="48" color="#D90000">mdi-calendar-clock</v-icon>
               <h3>Agendar Cita</h3>
               <p>Reserva tu próxima visita al taller</p>
             </button>
             
             <button @click="currentSection = 'orders'" class="action-card">
-              <v-icon size="48" color="#3AAFA9">mdi-file-document</v-icon>
+              <v-icon size="48" color="#D90000">mdi-file-document</v-icon>
               <h3>Ver Órdenes</h3>
               <p>Revisa el estado de tus servicios</p>
             </button>
             
             <button @click="currentSection = 'profile'" class="action-card">
-              <v-icon size="48" color="#3AAFA9">mdi-account</v-icon>
+              <v-icon size="48" color="#D90000">mdi-account</v-icon>
               <h3>Mi Perfil</h3>
               <p>Actualiza tu información</p>
             </button>
@@ -83,7 +83,7 @@
       <!-- Profile Section -->
       <div v-else-if="currentSection === 'profile'" class="section-content">
         <div class="placeholder-section">
-          <v-icon size="80" color="#3AAFA9">mdi-account-circle</v-icon>
+          <v-icon size="80" color="#D90000">mdi-account-circle</v-icon>
           <h2>Mi Perfil</h2>
           <p>Sección en construcción...</p>
         </div>
@@ -126,13 +126,13 @@
 .welcome-title {
   font-size: 3rem;
   font-weight: 800;
-  color: #2B7A78;
+  color: #e02626;
   margin-bottom: 1rem;
   animation: fadeInUp 0.6s ease-out;
 }
 
 .dark-mode .welcome-title {
-  color: #3AAFA9;
+  color: #b11212;
 }
 
 .welcome-text {
@@ -165,8 +165,8 @@
 
 .action-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 8px 24px rgba(58, 175, 169, 0.3);
-  border-color: #3AAFA9;
+  box-shadow: 0 8px 24px rgba(217, 0, 0, 0.3); /* Cambiado a rojo */
+  border-color: #D90000; /* Cambiado a rojo */
 }
 
 .dark-mode .action-card {
@@ -176,18 +176,19 @@
 
 .dark-mode .action-card:hover {
   background: #333;
-  border-color: #3AAFA9;
+  border-color: #D90000; /* Cambiado a rojo */
+  box-shadow: 0 8px 24px rgba(217, 0, 0, 0.3); /* Cambiado a rojo */
 }
 
 .action-card h3 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #2B7A78;
+  color: #ac1c1c;
   margin: 1rem 0 0.5rem;
 }
 
 .dark-mode .action-card h3 {
-  color: #3AAFA9;
+  color: #af3a3a;
 }
 
 .action-card p {
@@ -196,7 +197,7 @@
 }
 
 .dark-mode .action-card p {
-  color: #9ca3af;
+  color: #af9c9c;
 }
 
 /* Section Content */
@@ -218,12 +219,12 @@
 .placeholder-section h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: #2B7A78;
+  color: #D90000;
   margin-top: 1rem;
 }
 
 .dark-mode .placeholder-section h2 {
-  color: #3AAFA9;
+  color: #D90000;
 }
 
 .placeholder-section p {
@@ -258,22 +259,22 @@
 }
 
 .tab-button:hover {
-  color: #3AAFA9;
+  color: #af3a3a;
 }
 
 .tab-button.active {
-  color: #2B7A78;
-  border-bottom-color: #3AAFA9;
-  background: rgba(58, 175, 169, 0.05);
+  color: #7a2b2b;
+  border-bottom-color: #af3a3a;
+  background: rgba(175, 58, 58, 0.315);
 }
 
 .dark-mode .tab-button {
-  color: #9ca3af;
+  color: #af9c9c;
 }
 
 .dark-mode .tab-button.active {
-  color: #3AAFA9;
-  background: rgba(58, 175, 169, 0.1);
+  color: #af3a3a;
+  background: rgba(148, 18, 18, 0.226);
 }
 
 .dark-mode .tabs {

@@ -229,9 +229,21 @@ const steps = [
                 <v-avatar
                   size="64"
                   class="mx-auto mb-4 step-number"
-                  style="background: linear-gradient(135deg, rgb(220 38 38), rgb(185 28 28)); box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);"
+                  :style="{
+                    background: isDark
+                      ? 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))'
+                      : 'linear-gradient(135deg, rgb(220 38 38), rgb(185 28 28))',
+                    border: isDark
+                      ? '1px solid rgba(255,255,255,0.06)'
+                      : 'none',
+                    boxShadow: isDark
+                      ? '0 6px 18px rgba(0,0,0,0.6), 0 0 10px rgba(185,28,28,0.08)'
+                      : '0 0 20px rgba(220, 38, 38, 0.5)'
+                  }"
                 >
-                  <span class="text-h5 text-white font-weight-bold">{{ step.number }}</span>
+                  <span class="text-h5 font-weight-bold" :class="isDark ? 'text-white' : 'text-white'">
+                    {{ step.number }}
+                  </span>
                 </v-avatar>
                 <h3 class="text-h6 font-weight-semibold mb-3" :class="isDark ? 'text-white' : 'text-red'">
                   {{ step.title }}

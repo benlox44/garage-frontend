@@ -169,7 +169,7 @@ const formatDate = (date: string) => {
 .my-appointments > button {
   margin-bottom: 1.5rem;
   padding: 0.75rem 1.5rem;
-  background: #3AAFA9;
+  background: #c20808;
   color: white;
   border: none;
   border-radius: 4px;
