@@ -8,19 +8,19 @@ const router = useRouter()
 const user = ref({
   name: '',
   email: '',
-  role: ''
+  role: '',
 })
 
 const isEditing = ref(false)
 const editForm = ref({
   name: '',
-  phone: ''
+  phone: '',
 })
 
 const passwordForm = ref({
   oldPassword: '',
   newPassword: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
 
 const showPasswordForm = ref(false)
@@ -30,7 +30,7 @@ const modalConfig = ref({
   message: '',
   type: 'info' as 'info' | 'success' | 'warning' | 'error',
   showCancel: false,
-  action: null as (() => void) | null
+  action: null as (() => void) | null,
 })
 
 const loadProfile = async () => {
@@ -39,7 +39,7 @@ const loadProfile = async () => {
     user.value = {
       name: data.name,
       email: data.email,
-      role: data.rol
+      role: data.rol,
     }
     editForm.value.name = data.name
     // Assuming phone comes from backend, if not it will be empty
@@ -74,7 +74,7 @@ const changePassword = async () => {
 
   const success = await api.updatePassword({
     oldPassword: passwordForm.value.oldPassword,
-    newPassword: passwordForm.value.newPassword
+    newPassword: passwordForm.value.newPassword,
   })
 
   if (success) {
@@ -82,7 +82,11 @@ const changePassword = async () => {
     passwordForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' }
     showModalMessage('Éxito', 'Contraseña actualizada correctamente', 'success')
   } else {
-    showModalMessage('Error', 'No se pudo actualizar la contraseña. Verifica tu contraseña actual.', 'error')
+    showModalMessage(
+      'Error',
+      'No se pudo actualizar la contraseña. Verifica tu contraseña actual.',
+      'error',
+    )
   }
 }
 
@@ -100,18 +104,22 @@ const confirmDeleteAccount = () => {
       } else {
         showModalMessage('Error', 'No se pudo eliminar la cuenta', 'error')
       }
-    }
+    },
   }
   showModal.value = true
 }
 
-const showModalMessage = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error') => {
+const showModalMessage = (
+  title: string,
+  message: string,
+  type: 'info' | 'success' | 'warning' | 'error',
+) => {
   modalConfig.value = {
     title,
     message,
     type,
     showCancel: false,
-    action: null
+    action: null,
   }
   showModal.value = true
 }
@@ -158,14 +166,14 @@ onMounted(() => {
           <div v-if="isEditing" class="edit-form">
             <div class="form-group">
               <label>Nombre Completo</label>
-              <input v-model="editForm.name" type="text" />
+              <input v-model="editForm.name" type="text" class="letra-forms" />
             </div>
             <div class="form-actions">
               <button @click="cancelEditing" class="cancel-btn">Cancelar</button>
               <button @click="saveProfile" class="save-btn">Guardar</button>
             </div>
           </div>
-          <div v-else class="info-display">
+          <div v-else class="info-display user-data">
             <p><strong>Nombre:</strong> {{ user.name }}</p>
             <p><strong>Email:</strong> {{ user.email }}</p>
           </div>
@@ -183,17 +191,19 @@ onMounted(() => {
           <div v-if="showPasswordForm" class="password-form">
             <div class="form-group">
               <label>Contraseña Actual</label>
-              <input v-model="passwordForm.oldPassword" type="password" />
+              <input v-model="passwordForm.oldPassword" type="password" class="letra-forms" />
             </div>
             <div class="form-group">
               <label>Nueva Contraseña</label>
-              <input v-model="passwordForm.newPassword" type="password" />
+              <input v-model="passwordForm.newPassword" type="password" class="letra-forms" />
             </div>
             <div class="form-group">
               <label>Confirmar Nueva Contraseña</label>
-              <input v-model="passwordForm.confirmPassword" type="password" />
+              <input v-model="passwordForm.confirmPassword" type="password" class="letra-forms" />
             </div>
-            <button @click="changePassword" class="save-btn full-width">Actualizar Contraseña</button>
+            <button @click="changePassword" class="save-btn full-width">
+              Actualizar Contraseña
+            </button>
           </div>
         </div>
 
@@ -201,9 +211,7 @@ onMounted(() => {
         <div class="danger-zone">
           <h3>Zona de Peligro</h3>
           <p>Una vez que elimines tu cuenta, no hay vuelta atrás.</p>
-          <button @click="confirmDeleteAccount" class="delete-btn">
-            Eliminar Cuenta
-          </button>
+          <button @click="confirmDeleteAccount" class="delete-btn">Eliminar Cuenta</button>
         </div>
       </div>
     </div>
@@ -226,6 +234,9 @@ onMounted(() => {
   max-width: 800px;
   margin: 0 auto;
 }
+.letra-forms {
+  color: #333;
+}
 
 .section-title {
   color: #2c3e50;
@@ -237,11 +248,11 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .profile-header {
-  background: linear-gradient(135deg, #D90000 0%, #b30000 100%);
+  background: linear-gradient(135deg, #d90000 0%, #b30000 100%);
   padding: 30px;
   display: flex;
   align-items: center;
@@ -252,7 +263,7 @@ onMounted(() => {
 .avatar-placeholder {
   width: 80px;
   height: 80px;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -268,9 +279,16 @@ onMounted(() => {
   margin: 5px 0;
   opacity: 0.9;
 }
+.user-data p {
+  color: #333 !important; /* color claro u oscuro que tú quieras */
+}
+
+.user-data strong {
+  color: #333 !important; /* o el color que quieras */
+}
 
 .role-badge {
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
   padding: 2px 8px;
   border-radius: 10px;
   font-size: 0.8em;
@@ -299,10 +317,11 @@ onMounted(() => {
   color: #2c3e50;
 }
 
-.edit-btn, .toggle-btn {
+.edit-btn,
+.toggle-btn {
   background: none;
   border: none;
-  color: #D90000;
+  color: #d90000;
   cursor: pointer;
   font-weight: bold;
   display: flex;
@@ -334,7 +353,7 @@ onMounted(() => {
 }
 
 .save-btn {
-  background-color: #D90000;
+  background-color: #d90000;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -363,8 +382,11 @@ onMounted(() => {
 }
 
 .danger-zone h3 {
-  color: #c0392b;
+  color: #c0392b !important;
   margin-top: 0;
+}
+.danger-zone p {
+  color: #333 !important;
 }
 
 .delete-btn {

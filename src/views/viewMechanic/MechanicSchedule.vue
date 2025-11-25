@@ -24,12 +24,19 @@ const modalConfig = ref({
   message: '',
   type: 'info' as 'info' | 'success' | 'warning' | 'error',
   showCancel: false,
-  action: null as (() => void) | null
+  action: null as (() => void) | null,
 })
 
 const availableTimeSlots = [
-  '09:00', '10:00', '11:00', '12:00', 
-  '13:00', '14:00', '15:00', '16:00', '17:00'
+  '09:00',
+  '10:00',
+  '11:00',
+  '12:00',
+  '13:00',
+  '14:00',
+  '15:00',
+  '16:00',
+  '17:00',
 ]
 
 const loadSchedules = async () => {
@@ -47,7 +54,7 @@ const loadSchedules = async () => {
 
 const toggleHour = (hour: string) => {
   if (selectedHours.value.includes(hour)) {
-    selectedHours.value = selectedHours.value.filter(h => h !== hour)
+    selectedHours.value = selectedHours.value.filter((h) => h !== hour)
   } else {
     selectedHours.value.push(hour)
   }
@@ -66,7 +73,7 @@ const createSchedule = async () => {
   try {
     const success = await api.createSchedule({
       date: newDate.value,
-      availableHours: selectedHours.value
+      availableHours: selectedHours.value,
     })
 
     if (success) {
@@ -74,7 +81,11 @@ const createSchedule = async () => {
       showCreateModal.value = false
       await loadSchedules()
     } else {
-      showModalMessage('Error', 'No se pudo crear el horario. Verifica que no exista ya para esa fecha.', 'error')
+      showModalMessage(
+        'Error',
+        'No se pudo crear el horario. Verifica que no exista ya para esa fecha.',
+        'error',
+      )
     }
   } catch (error) {
     showModalMessage('Error', 'Error al crear el horario.', 'error')
@@ -84,7 +95,8 @@ const createSchedule = async () => {
 const confirmDelete = (scheduleId: number) => {
   modalConfig.value = {
     title: 'Eliminar Horario',
-    message: '¿Estás seguro de que deseas eliminar este día de tu agenda? Se cancelarán las citas pendientes.',
+    message:
+      '¿Estás seguro de que deseas eliminar este día de tu agenda? Se cancelarán las citas pendientes.',
     type: 'warning',
     showCancel: true,
     action: async () => {
@@ -95,18 +107,22 @@ const confirmDelete = (scheduleId: number) => {
       } else {
         showModalMessage('Error', 'No se pudo eliminar el horario.', 'error')
       }
-    }
+    },
   }
   showModal.value = true
 }
 
-const showModalMessage = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error') => {
+const showModalMessage = (
+  title: string,
+  message: string,
+  type: 'info' | 'success' | 'warning' | 'error',
+) => {
   modalConfig.value = {
     title,
     message,
     type,
     showCancel: false,
-    action: null
+    action: null,
   }
   showModal.value = true
 }
@@ -124,7 +140,7 @@ const formatDate = (dateStr: string) => {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
@@ -136,7 +152,7 @@ onMounted(() => {
 <template>
   <div class="mechanic-schedule">
     <div class="header">
-      <h2>📅 Mi Agenda</h2>
+      <h2>Mi Agenda</h2>
       <button @click="openCreateModal" class="add-btn">
         <v-icon>mdi-plus</v-icon> Agregar Disponibilidad
       </button>
@@ -173,21 +189,26 @@ onMounted(() => {
     <div v-if="showCreateModal" class="overlay">
       <div class="modal-card">
         <h3>Agregar Disponibilidad</h3>
-        
+
         <div class="form-group">
           <label>Fecha:</label>
-          <input type="date" v-model="newDate" class="form-input" :min="new Date().toISOString().split('T')[0]">
+          <input
+            type="date"
+            v-model="newDate"
+            class="form-input"
+            :min="new Date().toISOString().split('T')[0]"
+          />
         </div>
 
         <div class="form-group">
           <label>Horas Disponibles:</label>
           <div class="hours-selector">
-            <button 
-              v-for="hour in availableTimeSlots" 
+            <button
+              v-for="hour in availableTimeSlots"
               :key="hour"
               @click="toggleHour(hour)"
               class="hour-toggle"
-              :class="{ 'active': selectedHours.includes(hour) }"
+              :class="{ active: selectedHours.includes(hour) }"
             >
               {{ hour }}
             </button>
@@ -196,8 +217,8 @@ onMounted(() => {
 
         <div class="actions">
           <button @click="showCreateModal = false" class="cancel-btn">Cancelar</button>
-          <button 
-            @click="createSchedule" 
+          <button
+            @click="createSchedule"
             class="save-btn"
             :disabled="!newDate || selectedHours.length === 0"
           >
@@ -234,7 +255,7 @@ onMounted(() => {
 }
 
 .add-btn {
-  background: #D90000;
+  background: #d90000;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -250,7 +271,8 @@ onMounted(() => {
   background: #b30000;
 }
 
-.loading, .no-data {
+.loading,
+.no-data {
   text-align: center;
   padding: 40px;
   color: #7f8c8d;
@@ -259,7 +281,7 @@ onMounted(() => {
 .link-btn {
   background: none;
   border: none;
-  color: #D90000;
+  color: #d90000;
   text-decoration: underline;
   cursor: pointer;
   margin-top: 10px;
@@ -275,7 +297,7 @@ onMounted(() => {
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
@@ -325,7 +347,7 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -338,7 +360,7 @@ onMounted(() => {
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 .modal-card h3 {
@@ -382,13 +404,13 @@ onMounted(() => {
 }
 
 .hour-toggle:hover {
-  border-color: #D90000;
+  border-color: #d90000;
 }
 
 .hour-toggle.active {
-  background: #D90000;
+  background: #d90000;
   color: white;
-  border-color: #D90000;
+  border-color: #d90000;
 }
 
 .actions {
@@ -411,7 +433,7 @@ onMounted(() => {
 .save-btn {
   padding: 10px 20px;
   border: none;
-  background: #D90000;
+  background: #d90000;
   color: white;
   border-radius: 6px;
   cursor: pointer;
@@ -421,5 +443,62 @@ onMounted(() => {
 .save-btn:disabled {
   background: #ffcccc;
   cursor: not-allowed;
+}
+/* Fondo fijo para el modal */
+.modal-card {
+  background: #ffffff !important; /* Blanco siempre */
+  color: #2c3e50 !important; /* Texto siempre oscuro */
+}
+
+/* Labels */
+.modal-card label {
+  color: #2c3e50 !important;
+}
+
+/* Input DATE */
+.form-input {
+  color: #2c3e50 !important; /* Color del texto */
+  background-color: #ffffff !important; /* Fondo siempre blanco */
+  border: 1px solid #bbb !important;
+}
+
+/* Texto dentro del input date */
+.form-input::-webkit-datetime-edit,
+.form-input::-webkit-datetime-edit-text,
+.form-input::-webkit-datetime-edit-year-field,
+.form-input::-webkit-datetime-edit-month-field,
+.form-input::-webkit-datetime-edit-day-field {
+  color: #2c3e50 !important;
+}
+
+/* Icono del calendario */
+input.form-input::-webkit-calendar-picker-indicator {
+  opacity: 1 !important;
+  filter: none !important;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M15 2h-1V0h-2v2H8V0H6v2H5C3.3 2 2 3.3 2 5v12c0 1.7 1.3 3 3 3h10c1.7 0 3-1.3 3-3V5c0-1.7-1.3-3-3-3zm1 15c0 .6-.4 1-1 1H5c-.6 0-1-.4-1-1V8h12v9zm0-11H4V5c0-.6.4-1 1-1h1v1h2V4h4v1h2V4h1c.6 0 1 .4 1 1v1z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Botones de hora */
+.hour-toggle {
+  color: #2c3e50 !important;
+  background: #ffffff !important;
+}
+
+/* Botón de hora seleccionado */
+.hour-toggle.active {
+  background: #d90000 !important;
+  color: white !important;
+}
+
+/* Botones inferiores */
+.cancel-btn,
+.save-btn {
+  color: #2c3e50;
+}
+
+.save-btn {
+  color: white !important;
 }
 </style>

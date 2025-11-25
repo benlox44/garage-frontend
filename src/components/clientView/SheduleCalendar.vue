@@ -46,16 +46,16 @@ const modalConfig = ref({
   message: '',
   type: 'info' as 'info' | 'success' | 'warning' | 'error',
   showCancel: false,
-  action: null as (() => void) | null
+  action: null as (() => void) | null,
 })
 
 const loadData = async () => {
   loading.value = true
   const [schedulesData, vehiclesData] = await Promise.all([
     api.getAvailableSchedules(),
-    api.getMyVehicles()
+    api.getMyVehicles(),
   ])
-  
+
   schedules.value = schedulesData.data || []
   vehicles.value = vehiclesData.data || []
   loading.value = false
@@ -66,7 +66,7 @@ const formatDate = (dateStr: string) => {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
@@ -76,7 +76,7 @@ const selectSlot = (schedule: Schedule, hour: string) => {
     mechanicId: schedule.mechanicId,
     mechanicName: schedule.mechanic.name,
     date: schedule.date,
-    hour: hour
+    hour: hour,
   }
   // Reset form
   selectedVehicleId.value = null
@@ -102,28 +102,36 @@ const confirmAppointment = async () => {
         scheduleId: selectedSlot.value!.scheduleId,
         hour: selectedSlot.value!.hour,
         date: selectedSlot.value!.date,
-        description: description.value
+        description: description.value,
       })
 
       if (result.success) {
-        showModalMessage('Éxito', 'Cita agendada correctamente. Espera la confirmación del mecánico.', 'success')
+        showModalMessage(
+          'Éxito',
+          'Cita agendada correctamente. Espera la confirmación del mecánico.',
+          'success',
+        )
         selectedSlot.value = null
         await loadData() // Refresh availability
       } else {
         showModalMessage('Error', result.message, 'error')
       }
-    }
+    },
   }
   showModal.value = true
 }
 
-const showModalMessage = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error') => {
+const showModalMessage = (
+  title: string,
+  message: string,
+  type: 'info' | 'success' | 'warning' | 'error',
+) => {
   modalConfig.value = {
     title,
     message,
     type,
     showCancel: false,
-    action: null
+    action: null,
   }
   showModal.value = true
 }
@@ -143,37 +151,33 @@ onMounted(() => {
 
 <template>
   <div class="schedule-calendar">
-    <h2>📅 Horarios Disponibles</h2>
-    
+    <h2>Horarios Disponibles</h2>
+
     <div v-if="loading" class="loading">
       <v-progress-circular indeterminate color="#D90000"></v-progress-circular>
       <p>Cargando horarios...</p>
     </div>
-    
+
     <div v-else-if="schedules.length === 0" class="no-data">
       <v-icon size="64" color="#ccc">mdi-calendar-remove</v-icon>
       <p>No hay horarios disponibles en este momento.</p>
     </div>
-    
+
     <div v-else class="schedules-grid">
-      <div 
-        v-for="schedule in schedules" 
-        :key="schedule.id"
-        class="schedule-card"
-      >
+      <div v-for="schedule in schedules" :key="schedule.id" class="schedule-card">
         <div class="mechanic-info">
           <v-icon color="#D90000">mdi-account-wrench</v-icon>
           <strong>{{ schedule.mechanic.name }}</strong>
         </div>
-        <div class="date">📆 {{ formatDate(schedule.date) }}</div>
-        
+        <div class="date">{{ formatDate(schedule.date) }}</div>
+
         <div class="hours-grid">
           <button
             v-for="hour in schedule.availableHours"
             :key="hour"
             @click="selectSlot(schedule, hour)"
             class="hour-button"
-            :class="{ 'selected': isSelected(schedule.id, hour) }"
+            :class="{ selected: isSelected(schedule.id, hour) }"
           >
             {{ hour }}
           </button>
@@ -190,13 +194,13 @@ onMounted(() => {
             <v-icon>mdi-close</v-icon>
           </button>
         </div>
-        
+
         <div class="summary">
           <p><strong>Mecánico:</strong> {{ selectedSlot.mechanicName }}</p>
           <p><strong>Fecha:</strong> {{ formatDate(selectedSlot.date) }}</p>
           <p><strong>Hora:</strong> {{ selectedSlot.hour }}</p>
         </div>
-        
+
         <div class="form-group">
           <label>Selecciona tu Vehículo:</label>
           <select v-model="selectedVehicleId" class="form-select">
@@ -212,8 +216,8 @@ onMounted(() => {
 
         <div class="form-group">
           <label>Descripción del servicio (Opcional):</label>
-          <textarea 
-            v-model="description" 
+          <textarea
+            v-model="description"
             placeholder="Ej: Revisión de frenos, cambio de aceite..."
             class="form-textarea"
           ></textarea>
@@ -221,11 +225,7 @@ onMounted(() => {
 
         <div class="form-actions">
           <button @click="selectedSlot = null" class="cancel-btn">Cancelar</button>
-          <button 
-            @click="confirmAppointment" 
-            class="confirm-btn"
-            :disabled="!selectedVehicleId"
-          >
+          <button @click="confirmAppointment" class="confirm-btn" :disabled="!selectedVehicleId">
             Agendar Cita
           </button>
         </div>
@@ -251,7 +251,8 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-.loading, .no-data {
+.loading,
+.no-data {
   text-align: center;
   padding: 40px;
   color: #7f8c8d;
@@ -268,7 +269,7 @@ onMounted(() => {
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
 }
 
@@ -308,14 +309,14 @@ onMounted(() => {
 }
 
 .hour-button:hover {
-  border-color: #D90000;
-  color: #D90000;
+  border-color: #d90000;
+  color: #d90000;
 }
 
 .hour-button.selected {
-  background-color: #D90000;
+  background-color: #d90000;
   color: white;
-  border-color: #D90000;
+  border-color: #d90000;
 }
 
 /* Booking Form Overlay */
@@ -325,7 +326,7 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -339,7 +340,7 @@ onMounted(() => {
   border-radius: 12px;
   width: 100%;
   max-width: 500px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 .form-header {
@@ -384,7 +385,8 @@ onMounted(() => {
   color: #2c3e50;
 }
 
-.form-select, .form-textarea {
+.form-select,
+.form-textarea {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
@@ -422,7 +424,7 @@ onMounted(() => {
 .confirm-btn {
   padding: 10px 20px;
   border: none;
-  background: #D90000;
+  background: #d90000;
   color: white;
   border-radius: 6px;
   cursor: pointer;

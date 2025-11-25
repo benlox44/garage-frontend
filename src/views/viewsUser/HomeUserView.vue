@@ -1,40 +1,40 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import { useTheme } from '@/composables/useTheme'
-  import HeaderClient from '@/components/clientView/headerClient.vue'
-  import ScheduleCalendar from '@/components/clientView/SheduleCalendar.vue'
-  import MyAppointments from '@/components/clientView/MyAppointments.vue'
-  import Orders from '@/components/clientView/Orders.vue'
-  import Profile from '@/components/clientView/Profile.vue'
-  import MyVehicles from './MyVehicles.vue'
+import { ref } from 'vue'
+import { useTheme } from '@/composables/useTheme'
+import HeaderClient from '@/components/clientView/headerClient.vue'
+import ScheduleCalendar from '@/components/clientView/SheduleCalendar.vue'
+import MyAppointments from '@/components/clientView/MyAppointments.vue'
+import Orders from '@/components/clientView/Orders.vue'
+import Profile from '@/components/clientView/Profile.vue'
+import MyVehicles from './MyVehicles.vue'
 
-  const { isDark } = useTheme()
-  const currentSection = ref<'home' | 'orders' | 'appointments' | 'vehicles' | 'profile'>('home')
-  const activeTab = ref<'calendar' | 'appointments'>('calendar')
+const { isDark } = useTheme()
+const currentSection = ref<'home' | 'orders' | 'appointments' | 'vehicles' | 'profile'>('home')
+const activeTab = ref<'calendar' | 'appointments'>('calendar')
 
-  const handleNavigation = (section: 'orders' | 'appointments' | 'vehicles' | 'profile') => {
-    currentSection.value = section
-  }
+const handleNavigation = (section: 'orders' | 'appointments' | 'vehicles' | 'profile') => {
+  currentSection.value = section
+}
 </script>
 
 <template>
   <div class="user-view" :class="{ 'dark-mode': isDark }">
     <HeaderClient @navigate="handleNavigation" />
-    
+
     <div class="container">
       <!-- Home / Default View -->
       <div v-if="currentSection === 'home'" class="welcome-section">
         <div class="welcome-card">
           <h1 class="welcome-title">¡Bienvenido a GarageConnect!</h1>
           <p class="welcome-text">Gestiona tus citas y servicios de manera fácil y rápida</p>
-          
+
           <div class="quick-actions">
             <button @click="currentSection = 'appointments'" class="action-card">
               <v-icon size="48" color="#D90000">mdi-calendar-clock</v-icon>
               <h3>Agendar Cita</h3>
               <p>Reserva tu próxima visita al taller</p>
             </button>
-            
+
             <button @click="currentSection = 'orders'" class="action-card">
               <v-icon size="48" color="#D90000">mdi-file-document</v-icon>
               <h3>Ver Órdenes</h3>
@@ -46,7 +46,7 @@
               <h3>Mis Vehículos</h3>
               <p>Gestiona tus vehículos registrados</p>
             </button>
-            
+
             <button @click="currentSection = 'profile'" class="action-card">
               <v-icon size="48" color="#D90000">mdi-account</v-icon>
               <h3>Mi Perfil</h3>
@@ -70,19 +70,19 @@
       <div v-else-if="currentSection === 'appointments'" class="section-content">
         <!-- Navigation Tabs -->
         <div class="tabs">
-          <button 
-            @click="activeTab = 'calendar'" 
+          <button
+            @click="activeTab = 'calendar'"
             :class="{ active: activeTab === 'calendar' }"
             class="tab-button"
           >
-            📅 Agendar Cita
+            Agendar Cita
           </button>
-          <button 
-            @click="activeTab = 'appointments'" 
+          <button
+            @click="activeTab = 'appointments'"
             :class="{ active: activeTab === 'appointments' }"
             class="tab-button"
           >
-            📋 Mis Citas
+            Mis Citas
           </button>
         </div>
 
@@ -95,7 +95,7 @@
 
       <!-- Profile Section -->
       <div v-else-if="currentSection === 'profile'" class="section-content">
-        <Profile />
+        <Profile :is-dark="isDark" />
       </div>
     </div>
   </div>
@@ -169,13 +169,13 @@
   padding: 2rem;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .action-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 8px 24px rgba(217, 0, 0, 0.3); /* Cambiado a rojo */
-  border-color: #D90000; /* Cambiado a rojo */
+  border-color: #d90000; /* Cambiado a rojo */
 }
 
 .dark-mode .action-card {
@@ -185,7 +185,7 @@
 
 .dark-mode .action-card:hover {
   background: #333;
-  border-color: #D90000; /* Cambiado a rojo */
+  border-color: #d90000; /* Cambiado a rojo */
   box-shadow: 0 8px 24px rgba(217, 0, 0, 0.3); /* Cambiado a rojo */
 }
 
@@ -228,12 +228,12 @@
 .placeholder-section h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: #D90000;
+  color: #d90000;
   margin-top: 1rem;
 }
 
 .dark-mode .placeholder-section h2 {
-  color: #D90000;
+  color: #d90000;
 }
 
 .placeholder-section p {
@@ -348,7 +348,7 @@
 
   .tab-button.active {
     border-bottom-color: #e5e7eb;
-    border-left-color: #3AAFA9;
+    border-left-color: #3aafa9;
   }
 }
 </style>

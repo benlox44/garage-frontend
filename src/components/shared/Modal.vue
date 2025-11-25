@@ -31,17 +31,10 @@ const emit = defineEmits(['close', 'confirm'])
 
           <div class="modal-footer">
             <slot name="footer">
-              <button 
-                v-if="showCancel" 
-                class="modal-default-button cancel" 
-                @click="$emit('close')"
-              >
+              <button v-if="showCancel" class="modal-default-button cancel" @click="$emit('close')">
                 {{ cancelText || 'Cancelar' }}
               </button>
-              <button 
-                class="modal-default-button confirm" 
-                @click="$emit('confirm')"
-              >
+              <button class="modal-default-button confirm" @click="$emit('confirm')">
                 {{ confirmText || 'Aceptar' }}
               </button>
             </slot>
@@ -100,7 +93,7 @@ const emit = defineEmits(['close', 'confirm'])
 }
 
 .modal-default-button.confirm {
-  background-color: #D90000;
+  background-color: #d90000;
   color: white;
 }
 
@@ -131,5 +124,11 @@ const emit = defineEmits(['close', 'confirm'])
 .modal-leave-to .modal-container {
   -webkit-transform: scale(1.1);
   transform: scale(1.1);
+}
+/* Fuerza un color de texto fijo para el modal completo */
+.modal-container,
+.modal-container p,
+.modal-container h3 {
+  color: #2c3e50 !important; /* Color fijo que se verá en dark y light */
 }
 </style>

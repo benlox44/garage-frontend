@@ -30,12 +30,12 @@ const newOrderForm = ref({
   vehicleId: null as number | null,
   description: '',
   estimatedCost: 0,
-  requestedServices: ''
+  requestedServices: '',
 })
 
 const newItemForm = ref({
   description: '',
-  cost: 0
+  cost: 0,
 })
 
 const modalConfig = ref({
@@ -43,7 +43,7 @@ const modalConfig = ref({
   message: '',
   type: 'info' as 'info' | 'success' | 'warning' | 'error',
   showCancel: false,
-  action: null as (() => void) | null
+  action: null as (() => void) | null,
 })
 
 const loadOrders = async () => {
@@ -56,7 +56,7 @@ const createOrder = () => {
     vehicleId: null,
     description: '',
     estimatedCost: 0,
-    requestedServices: ''
+    requestedServices: '',
   }
   showCreateModal.value = true
 }
@@ -71,8 +71,11 @@ const submitOrder = async () => {
     vehicleId: newOrderForm.value.vehicleId,
     description: newOrderForm.value.description,
     estimatedCost: newOrderForm.value.estimatedCost,
-    requestedServices: newOrderForm.value.requestedServices.split(',').map(s => s.trim()).filter(s => s),
-    items: []
+    requestedServices: newOrderForm.value.requestedServices
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s),
+    items: [],
   }
 
   const result = await api.createWorkOrder(payload)
@@ -95,12 +98,12 @@ const closeDetails = () => {
 
 const updateStatus = async (status: string) => {
   if (!selectedOrder.value) return
-  
+
   const result = await api.updateWorkOrder(selectedOrder.value.id, { status })
   if (result) {
     selectedOrder.value.status = status
     // Update in list as well
-    const idx = orders.value.findIndex(o => o.id === selectedOrder.value!.id)
+    const idx = orders.value.findIndex((o) => o.id === selectedOrder.value!.id)
     if (idx !== -1 && orders.value[idx]) orders.value[idx].status = status
     showModalMessage('Éxito', 'Estado actualizado', 'success')
   }
@@ -114,10 +117,12 @@ const addItem = async () => {
   }
 
   const result = await api.addWorkOrderItems(selectedOrder.value.id, {
-    items: [{
-      description: newItemForm.value.description,
-      cost: newItemForm.value.cost
-    }]
+    items: [
+      {
+        description: newItemForm.value.description,
+        cost: newItemForm.value.cost,
+      },
+    ],
   })
 
   if (result) {
@@ -126,7 +131,7 @@ const addItem = async () => {
     if (updatedOrder && updatedOrder.data) {
       selectedOrder.value = updatedOrder.data
       // Update list
-      const idx = orders.value.findIndex(o => o.id === selectedOrder.value!.id)
+      const idx = orders.value.findIndex((o) => o.id === selectedOrder.value!.id)
       if (idx !== -1) orders.value[idx] = updatedOrder.data
     }
     newItemForm.value = { description: '', cost: 0 }
@@ -134,13 +139,17 @@ const addItem = async () => {
   }
 }
 
-const showModalMessage = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error') => {
+const showModalMessage = (
+  title: string,
+  message: string,
+  type: 'info' | 'success' | 'warning' | 'error',
+) => {
   modalConfig.value = {
     title,
     message,
     type,
     showCancel: false,
-    action: null
+    action: null,
   }
   showModal.value = true
 }
@@ -155,11 +164,16 @@ const handleConfirm = () => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'PENDING': return '#f1c40f'
-    case 'IN_PROGRESS': return '#3498db'
-    case 'COMPLETED': return '#2ecc71'
-    case 'CANCELLED': return '#e74c3c'
-    default: return '#95a5a6'
+    case 'PENDING':
+      return '#f1c40f'
+    case 'IN_PROGRESS':
+      return '#3498db'
+    case 'COMPLETED':
+      return '#2ecc71'
+    case 'CANCELLED':
+      return '#e74c3c'
+    default:
+      return '#95a5a6'
   }
 }
 
@@ -172,22 +186,13 @@ onMounted(() => {
   <div class="mechanic-orders">
     <div class="header-actions">
       <h2 class="section-title">Gestión de Órdenes</h2>
-      <button @click="createOrder" class="create-btn">
-        <v-icon>mdi-plus</v-icon> Nueva Orden
-      </button>
+      <button @click="createOrder" class="create-btn"><v-icon>mdi-plus</v-icon> Nueva Orden</button>
     </div>
 
     <div v-if="!selectedOrder" class="orders-list">
-      <div v-if="orders.length === 0" class="no-orders">
-        No hay órdenes de trabajo.
-      </div>
+      <div v-if="orders.length === 0" class="no-orders">No hay órdenes de trabajo.</div>
 
-      <div 
-        v-for="order in orders" 
-        :key="order.id" 
-        class="order-card"
-        @click="viewDetails(order)"
-      >
+      <div v-for="order in orders" :key="order.id" class="order-card" @click="viewDetails(order)">
         <div class="order-header">
           <span class="order-id">#{{ order.id }}</span>
           <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
@@ -215,8 +220,8 @@ onMounted(() => {
           <div class="details-header">
             <h2>Orden #{{ selectedOrder.id }}</h2>
             <div class="status-actions">
-              <select 
-                :value="selectedOrder.status" 
+              <select
+                :value="selectedOrder.status"
                 @change="(e) => updateStatus((e.target as HTMLSelectElement).value)"
                 class="status-select"
               >
@@ -230,17 +235,25 @@ onMounted(() => {
 
           <div class="vehicle-info">
             <h3>Vehículo</h3>
-            <p>{{ selectedOrder.vehicle.brand }} {{ selectedOrder.vehicle.model }} - {{ selectedOrder.vehicle.plate }}</p>
+            <p>
+              {{ selectedOrder.vehicle.brand }} {{ selectedOrder.vehicle.model }} -
+              {{ selectedOrder.vehicle.plate }}
+            </p>
           </div>
         </div>
 
         <!-- Items -->
         <div class="details-card items-section">
           <h3>Ítems y Servicios</h3>
-          
+
           <div class="add-item-form">
             <input v-model="newItemForm.description" placeholder="Descripción" class="input-desc" />
-            <input v-model.number="newItemForm.cost" type="number" placeholder="Costo" class="input-cost" />
+            <input
+              v-model.number="newItemForm.cost"
+              type="number"
+              placeholder="Costo"
+              class="input-cost"
+            />
             <button @click="addItem" class="add-btn">Agregar</button>
           </div>
 
@@ -263,9 +276,7 @@ onMounted(() => {
     <!-- Create Order Modal -->
     <v-dialog v-model="showCreateModal" max-width="600px">
       <v-card>
-        <v-card-title class="text-h5 bg-red text-white pa-4">
-          Nueva Orden de Trabajo
-        </v-card-title>
+        <v-card-title class="text-h5 bg-red text-white pa-4"> Nueva Orden de Trabajo </v-card-title>
         <v-card-text class="pa-4">
           <v-form @submit.prevent="submitOrder">
             <v-text-field
@@ -278,7 +289,7 @@ onMounted(() => {
               hint="Ingrese el ID del vehículo del cliente"
               persistent-hint
             ></v-text-field>
-            
+
             <v-textarea
               v-model="newOrderForm.description"
               label="Descripción del Problema"
@@ -310,7 +321,9 @@ onMounted(() => {
         </v-card-text>
         <v-card-actions class="pa-4 pt-0">
           <v-spacer></v-spacer>
-          <v-btn color="grey-darken-1" variant="text" @click="showCreateModal = false">Cancelar</v-btn>
+          <v-btn color="grey-darken-1" variant="text" @click="showCreateModal = false"
+            >Cancelar</v-btn
+          >
           <v-btn color="red" variant="elevated" @click="submitOrder">Crear Orden</v-btn>
         </v-card-actions>
       </v-card>
@@ -343,12 +356,12 @@ onMounted(() => {
 }
 
 .section-title {
-  color: #2c3e50;
+  color: #ccd6e1;
   margin: 0;
 }
 
 .create-btn {
-  background-color: #D90000;
+  background-color: #d90000;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -369,7 +382,7 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   padding: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s;
   display: flex;
@@ -398,7 +411,7 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .details-header {
@@ -482,7 +495,7 @@ onMounted(() => {
 .back-button {
   background: none;
   border: none;
-  color: #D90000;
+  color: #d90000;
   cursor: pointer;
   display: flex;
   align-items: center;

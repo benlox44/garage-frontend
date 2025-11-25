@@ -22,7 +22,7 @@ const formData = ref({
   brand: '',
   model: '',
   year: new Date().getFullYear(),
-  licensePlate: ''
+  licensePlate: '',
 })
 
 // Modal config
@@ -32,16 +32,20 @@ const modalConfig = ref({
   message: '',
   type: 'info' as 'info' | 'success' | 'warning' | 'error',
   showCancel: false,
-  action: null as (() => void) | null
+  action: null as (() => void) | null,
 })
 
-const showModalMessage = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error') => {
+const showModalMessage = (
+  title: string,
+  message: string,
+  type: 'info' | 'success' | 'warning' | 'error',
+) => {
   modalConfig.value = {
     title,
     message,
     type,
     showCancel: false,
-    action: null
+    action: null,
   }
   showModal.value = true
 }
@@ -66,7 +70,7 @@ const openCreateModal = () => {
     brand: '',
     model: '',
     year: new Date().getFullYear(),
-    licensePlate: ''
+    licensePlate: '',
   }
   showFormModal.value = true
 }
@@ -78,7 +82,7 @@ const openEditModal = (vehicle: Vehicle) => {
     brand: vehicle.brand,
     model: vehicle.model,
     year: vehicle.year,
-    licensePlate: vehicle.licensePlate
+    licensePlate: vehicle.licensePlate,
   }
   showFormModal.value = true
 }
@@ -123,7 +127,7 @@ const confirmDelete = (vehicleId: number) => {
       } else {
         showModalMessage('Error', result.message, 'error')
       }
-    }
+    },
   }
   showModal.value = true
 }
@@ -137,9 +141,7 @@ onMounted(() => {
   <div class="vehicles-container">
     <div class="d-flex justify-space-between align-center mb-6">
       <h2 class="text-h4 font-weight-bold text-red">Mis Vehículos</h2>
-      <v-btn color="red" prepend-icon="mdi-plus" @click="openCreateModal">
-        Agregar Vehículo
-      </v-btn>
+      <v-btn color="red" prepend-icon="mdi-plus" @click="openCreateModal"> Agregar Vehículo </v-btn>
     </div>
 
     <div v-if="loading" class="d-flex justify-center py-8">
@@ -180,10 +182,20 @@ onMounted(() => {
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn variant="text" color="blue-darken-1" prepend-icon="mdi-pencil" @click="openEditModal(vehicle)">
+            <v-btn
+              variant="text"
+              color="blue-darken-1"
+              prepend-icon="mdi-pencil"
+              @click="openEditModal(vehicle)"
+            >
               Editar
             </v-btn>
-            <v-btn variant="text" color="red" prepend-icon="mdi-delete" @click="confirmDelete(vehicle.id)">
+            <v-btn
+              variant="text"
+              color="red"
+              prepend-icon="mdi-delete"
+              @click="confirmDelete(vehicle.id)"
+            >
               Eliminar
             </v-btn>
           </v-card-actions>
@@ -235,7 +247,9 @@ onMounted(() => {
         </v-card-text>
         <v-card-actions class="pa-4 pt-0">
           <v-spacer></v-spacer>
-          <v-btn color="grey-darken-1" variant="text" @click="showFormModal = false">Cancelar</v-btn>
+          <v-btn color="grey-darken-1" variant="text" @click="showFormModal = false"
+            >Cancelar</v-btn
+          >
           <v-btn color="red" variant="elevated" @click="saveVehicle">Guardar</v-btn>
         </v-card-actions>
       </v-card>
@@ -261,12 +275,14 @@ onMounted(() => {
 }
 
 .vehicle-card {
-  transition: transform 0.2s, box-shadow 0.2s;
-  border: 1px solid rgba(0,0,0,0.05);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .vehicle-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
 }
 </style>
