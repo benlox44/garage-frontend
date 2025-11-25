@@ -23,12 +23,25 @@
         </v-col>
       </v-row>
     </v-form>
+    <Modal
+      :show="showModal"
+      :title="modalConfig.title"
+      :message="modalConfig.message"
+      :type="modalConfig.type"
+      :show-cancel="modalConfig.showCancel"
+      @close="showModal = false"
+      @confirm="showModal = false"
+    />
   </v-container>
 </template>
 
 <script>
 import api from '@/services/garage-back-api'
+import Modal from '@/components/shared/Modal.vue'
 export default {
+  components: {
+    Modal,
+  },
   data: () => ({
     valid: false,
     email: '',
@@ -45,6 +58,13 @@ export default {
       },
     ],
     loading: false,
+    showModal: false,
+    modalConfig: {
+      title: '',
+      message: '',
+      type: '',
+      showCancel: false,
+    },
   }),
   methods: {
     async handleSubmit() {
@@ -59,18 +79,30 @@ export default {
       const formData = {
         email: this.email,
       }
-      console.log('Formulario válido ✅', formData)
       //comprobar con backend
 
       try {
         const respuestaValida = await api.recuperarCuenta(this.email)
-        console.log('Respuesta del servidor:', respuestaValida)
-        alert('Si tu correo esta registrado, te llegara un link a tu E-mail ✅')
+        // 🔥 MODAL DE ÉXITO
+        this.modalConfig = {
+          title: 'Correo enviado',
+          message: 'Si tu correo está registrado, te llegará un link para restaurar tu contraseña.',
+          type: 'success',
+          showCancel: false,
+        }
+        this.showModal = true
 
         // 🔥 Redirigir a la vista de usuario (ruta definida en tu router)
       } catch (error) {
         console.error('El correo es invalido ❌', error)
-        alert('El correo es incorrecto')
+        // 🔥 MODAL DE ERROR
+        this.modalConfig = {
+          title: 'Error',
+          message: 'El correo es incorrecto o no se encuentra registrado.',
+          type: 'error',
+          showCancel: false,
+        }
+        this.showModal = true
       } finally {
         this.loading = false // ✅ detener spinner ocurra lo que ocurra
       }
@@ -89,7 +121,7 @@ export default {
 
 .recover-title {
   margin-bottom: 40px;
-  color: #ffffff;
+  color: #dc2626;
   text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
   font-size: 1.2rem;
 }

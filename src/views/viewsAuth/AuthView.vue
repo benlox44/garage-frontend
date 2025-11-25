@@ -4,7 +4,7 @@
     <div class="theme-toggle-wrapper">
       <ThemeToggle />
     </div>
-    
+
     <v-row class="layout-row">
       <!-- CONTENEDOR CENTRALIZADO -->
       <v-col cols="12" class="center-panel">
@@ -39,8 +39,8 @@
 
           <!-- Contenedor del Formulario -->
           <v-card-text class="form-container">
-            <component 
-              :is="formMap[activeForm]" 
+            <component
+              :is="formMap[activeForm]"
               @login-failed="handleLoginFailed"
               @account-blocked="showRecoverAccount"
               @forgot-password="activeForm = 'forgot'"
@@ -49,7 +49,7 @@
             <!-- Botón de Recuperar Cuenta (solo si está bloqueado) -->
             <div v-if="isAccountBlocked" class="recover-account-section">
               <v-alert type="warning" variant="tonal" class="mb-4">
-                <strong>Cuenta bloqueada</strong><br>
+                <strong>Cuenta bloqueada</strong><br />
                 Tu cuenta ha sido bloqueada por múltiples intentos fallidos.
               </v-alert>
               <v-btn
@@ -71,12 +71,7 @@
               <v-card-title class="dialog-title">
                 <v-icon left color="error">mdi-lock-reset</v-icon>
                 Recuperar Contraseña
-                <v-btn
-                  icon
-                  variant="text"
-                  @click="showForgotPassword = false"
-                  class="close-btn"
-                >
+                <v-btn icon variant="text" @click="showForgotPassword = false" class="close-btn">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
               </v-card-title>
@@ -151,7 +146,6 @@ export default {
   methods: {
     handleLoginFailed() {
       // Aquí puedes agregar lógica adicional cuando falla el login
-      console.log('Login failed')
     },
     showRecoverAccount() {
       this.isAccountBlocked = true

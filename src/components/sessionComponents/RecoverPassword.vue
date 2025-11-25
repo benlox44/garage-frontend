@@ -23,11 +23,25 @@
         </v-col>
       </v-row>
     </v-form>
+    <Modal
+      :show="showModal"
+      :title="modalConfig.title"
+      :message="modalConfig.message"
+      :type="modalConfig.type"
+      :show-cancel="modalConfig.showCancel"
+      @close="showModal = false"
+      @confirm="showModal = false"
+    />
   </v-container>
 </template>
 
 <script>
+import Modal from '@/components/shared/Modal.vue'
+
 export default {
+  components: {
+    Modal,
+  },
   data: () => ({
     valid: false,
     email: '',
@@ -44,13 +58,21 @@ export default {
       },
     ],
     loading: false,
+    // 👇 NUEVO
+    showModal: false,
+    modalConfig: {
+      title: '',
+      message: '',
+      type: 'info',
+      showCancel: false,
+    },
   }),
+
   methods: {
     async handleSubmit() {
       const isValid = await this.$refs.form.validate()
 
       if (!isValid.valid) {
-        console.log('Formulario inválido ❌')
         return
       }
       this.loading = true // ⏳ inicia spinner
@@ -58,19 +80,27 @@ export default {
       const formData = {
         email: this.email,
       }
-      console.log('Formulario válido ✅', formData)
       //comprobar con backend
 
       try {
-        alert('Te llegara un correo ✅')
+        this.showModalMessage(
+          'Correo enviado',
+          'Te llegará un correo con instrucciones para recuperar tu contraseña.',
+          'success',
+        )
 
         // 🔥 Redirigir a la vista de usuario (ruta definida en tu router)
       } catch (error) {
         console.error('El correo es invalido ❌', error)
-        alert('El correo es incorrecto 😕')
+        this.showModalMessage('Error', 'El correo ingresado no existe o es inválido.', 'error')
       } finally {
         this.loading = false // ✅ detener spinner ocurra lo que ocurra
       }
+    },
+
+    showModalMessage(title, message, type = 'info') {
+      this.modalConfig = { title, message, type, showCancel: false }
+      this.showModal = true
     },
   },
 }
@@ -86,7 +116,7 @@ export default {
 
 .recover-title {
   margin-bottom: 40px;
-  color: #ffffff;
+  color: #dc2626;
   text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
   font-size: 1.2rem;
 }

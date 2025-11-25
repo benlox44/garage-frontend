@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
-
+import { useTheme } from '@/composables/useTheme'
 interface WorkOrderItem {
   id: number
   description: string
@@ -21,6 +21,7 @@ interface WorkOrder {
   items: WorkOrderItem[]
   createdAt: string
 }
+const { isDark } = useTheme()
 
 const orders = ref<WorkOrder[]>([])
 const selectedOrder = ref<WorkOrder | null>(null)
@@ -30,7 +31,7 @@ const modalConfig = ref({
   message: '',
   type: 'info' as 'info' | 'success' | 'warning' | 'error',
   showCancel: false,
-  action: null as (() => void) | null
+  action: null as (() => void) | null,
 })
 
 const loadOrders = async () => {
@@ -61,13 +62,13 @@ const approveItem = async (item: WorkOrderItem) => {
         await loadOrders()
         // Update selected order reference
         if (selectedOrder.value) {
-          selectedOrder.value = orders.value.find(o => o.id === selectedOrder.value!.id) || null
+          selectedOrder.value = orders.value.find((o) => o.id === selectedOrder.value!.id) || null
         }
       } else {
         // Fallback if modal fails or just close
         showModal.value = false
       }
-    }
+    },
   }
   showModal.value = true
 }
@@ -82,21 +83,31 @@ const handleConfirm = () => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'PENDING': return '#f1c40f'
-    case 'IN_PROGRESS': return '#3498db'
-    case 'COMPLETED': return '#2ecc71'
-    case 'CANCELLED': return '#e74c3c'
-    default: return '#95a5a6'
+    case 'PENDING':
+      return '#f1c40f'
+    case 'IN_PROGRESS':
+      return '#3498db'
+    case 'COMPLETED':
+      return '#2ecc71'
+    case 'CANCELLED':
+      return '#e74c3c'
+    default:
+      return '#95a5a6'
   }
 }
 
 const getStatusText = (status: string) => {
   switch (status) {
-    case 'PENDING': return 'Pendiente'
-    case 'IN_PROGRESS': return 'En Progreso'
-    case 'COMPLETED': return 'Completada'
-    case 'CANCELLED': return 'Cancelada'
-    default: return status
+    case 'PENDING':
+      return 'Pendiente'
+    case 'IN_PROGRESS':
+      return 'En Progreso'
+    case 'COMPLETED':
+      return 'Completada'
+    case 'CANCELLED':
+      return 'Cancelada'
+    default:
+      return status
   }
 }
 
@@ -107,7 +118,7 @@ onMounted(() => {
 
 <template>
   <div class="orders-container">
-    <h2 class="section-title">Mis Órdenes de Trabajo</h2>
+    <h2 class="section-title" :class="{ 'dark-text': isDark }">Mis Órdenes de Trabajo</h2>
 
     <div v-if="!selectedOrder" class="orders-list">
       <div v-if="orders.length === 0" class="no-orders">
@@ -115,12 +126,7 @@ onMounted(() => {
         <p>No tienes órdenes de trabajo activas.</p>
       </div>
 
-      <div 
-        v-for="order in orders" 
-        :key="order.id" 
-        class="order-card"
-        @click="viewDetails(order)"
-      >
+      <div v-for="order in orders" :key="order.id" class="order-card" @click="viewDetails(order)">
         <div class="order-header">
           <span class="order-id">#{{ order.id }}</span>
           <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
@@ -145,14 +151,20 @@ onMounted(() => {
       <div class="details-card">
         <div class="details-header">
           <h2>Orden #{{ selectedOrder.id }}</h2>
-          <span class="status-badge" :style="{ backgroundColor: getStatusColor(selectedOrder.status) }">
+          <span
+            class="status-badge"
+            :style="{ backgroundColor: getStatusColor(selectedOrder.status) }"
+          >
             {{ getStatusText(selectedOrder.status) }}
           </span>
         </div>
 
         <div class="vehicle-info">
           <h3>Vehículo</h3>
-          <p>{{ selectedOrder.vehicle.brand }} {{ selectedOrder.vehicle.model }} - {{ selectedOrder.vehicle.plate }}</p>
+          <p>
+            {{ selectedOrder.vehicle.brand }} {{ selectedOrder.vehicle.model }} -
+            {{ selectedOrder.vehicle.plate }}
+          </p>
         </div>
 
         <div class="items-list">
@@ -169,13 +181,7 @@ onMounted(() => {
               <span v-if="item.isApproved" class="approved-badge">
                 <v-icon color="green" size="small">mdi-check-circle</v-icon> Aprobado
               </span>
-              <button 
-                v-else 
-                class="approve-btn"
-                @click.stop="approveItem(item)"
-              >
-                Aprobar
-              </button>
+              <button v-else class="approve-btn" @click.stop="approveItem(item)">Aprobar</button>
             </div>
           </div>
         </div>
@@ -206,6 +212,9 @@ onMounted(() => {
   margin-bottom: 20px;
   text-align: center;
 }
+.dark-text {
+  color: white !important;
+}
 
 .orders-list {
   display: grid;
@@ -216,7 +225,7 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   padding: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s;
   display: flex;
@@ -259,7 +268,7 @@ onMounted(() => {
 .back-button {
   background: none;
   border: none;
-  color: #D90000;
+  color: #d90000;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -272,7 +281,7 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .details-header {

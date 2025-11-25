@@ -4,7 +4,7 @@ const http = axios.create({
   baseURL: 'http://localhost:3000',
 })
 
-// ⬇️ Interceptor para agregar el token automáticamente
+// ⬇ Interceptor para agregar el token automáticamente
 http.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
@@ -16,10 +16,8 @@ http.interceptors.request.use((config) => {
 // Ahora creamos el objeto api con métodos
 const api = {
   async register(name: string, email: string, password: string) {
-    console.log('Registrando usuario:', { name, email, password })
     try {
       const response = await http.post('/auth', { name, email, password })
-      console.log('Respuesta del registro:', response.data)
       return true
     } catch (error) {
       console.error('Error en el registro:', error)
@@ -233,7 +231,6 @@ const api = {
     }
   },
 
-
   async createMechanic(name: string, email: string, password: string) {
     try {
       const response = await http.post('/users/create-mechanic', { name, email, password })
@@ -257,10 +254,21 @@ const api = {
   },
 
   //agendar una cita
-  async createAppointment(appointmentData: {mechanicId: number, vehicleId: number, scheduleId: number, hour: string, date: string, description?: string}) {
+  async createAppointment(appointmentData: {
+    mechanicId: number
+    vehicleId: number
+    scheduleId: number
+    hour: string
+    date: string
+    description?: string
+  }) {
     try {
       const response = await http.post('/appointments', appointmentData)
-      return { success: true, message: response.data.message, appointmentId: response.data.appointmentId }
+      return {
+        success: true,
+        message: response.data.message,
+        appointmentId: response.data.appointmentId,
+      }
     } catch (error: any) {
       console.error('Error al crear cita:', error)
       const errorMessage = error.response?.data?.message || 'Error al crear cita'
@@ -287,7 +295,7 @@ const api = {
     } catch (error) {
       console.error('Error al obtener detalles de la cita:', error)
       return null
-    } 
+    }
   },
 
   //Cancelar una cita
@@ -365,13 +373,19 @@ const api = {
     }
   },
 
-  async updateVehicle(id: number, data: { brand?: string; model?: string; year?: number; licensePlate?: string }) {
+  async updateVehicle(
+    id: number,
+    data: { brand?: string; model?: string; year?: number; licensePlate?: string },
+  ) {
     try {
       const response = await http.patch(`/users/me/vehicles/${id}`, data)
       return { success: true, message: response.data.message }
     } catch (error: any) {
       console.error('Error al actualizar vehículo:', error)
-      return { success: false, message: error.response?.data?.message || 'Error al actualizar vehículo' }
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Error al actualizar vehículo',
+      }
     }
   },
 
@@ -381,7 +395,10 @@ const api = {
       return { success: true, message: response.data.message }
     } catch (error: any) {
       console.error('Error al eliminar vehículo:', error)
-      return { success: false, message: error.response?.data?.message || 'Error al eliminar vehículo' }
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Error al eliminar vehículo',
+      }
     }
   },
 }

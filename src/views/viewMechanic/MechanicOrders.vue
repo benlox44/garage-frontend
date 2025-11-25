@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
+import { useTheme } from '@/composables/useTheme'
+const { isDark } = useTheme()
 
 interface WorkOrderItem {
   id: number
@@ -185,7 +187,7 @@ onMounted(() => {
 <template>
   <div class="mechanic-orders">
     <div class="header-actions">
-      <h2 class="section-title">Gestión de Órdenes</h2>
+      <h2 class="section-title" :class="{ 'dark-text': isDark }">Gestión de Órdenes</h2>
       <button @click="createOrder" class="create-btn"><v-icon>mdi-plus</v-icon> Nueva Orden</button>
     </div>
 
@@ -356,8 +358,11 @@ onMounted(() => {
 }
 
 .section-title {
-  color: #ccd6e1;
+  color: #000000;
   margin: 0;
+}
+.dark-text {
+  color: #f0f0f0 !important;
 }
 
 .create-btn {

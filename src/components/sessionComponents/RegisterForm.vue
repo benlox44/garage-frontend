@@ -61,13 +61,23 @@
         </v-col>
       </v-row>
     </v-form>
+    <Modal
+      :show="showModal"
+      :title="modalConfig.title"
+      :message="modalConfig.message"
+      :type="modalConfig.type"
+      :show-cancel="modalConfig.showCancel"
+      @close="showModal = false"
+      @confirm="showModal = false"
+    />
   </v-container>
 </template>
 
 <script>
 import api from '@/services/garage-back-api'
-
+import Modal from '@/components/shared/Modal.vue'
 export default {
+  components: { Modal },
   data: () => ({
     valid: false,
     loading: false,
@@ -115,16 +125,35 @@ export default {
     passwordConfirmedRules: [(value) => !!value || 'Password confirmation is required.'],
     checkbox: false,
     checkboxRules: [(value) => value || 'Debes aceptar para continuar'],
+    showModal: false,
+    modalConfig: {
+      title: '',
+      message: '',
+      type: '',
+      showCancel: false,
+    },
   }),
   methods: {
     async handleSubmit() {
       const isValid = await this.$refs.form.validate()
 
       if (!isValid.valid) {
-        alert('Formulario inválido ❌')
+        this.modalConfig = {
+          title: 'Error de validación',
+          message: 'Por favor, revisa los campos del formulario.',
+          type: 'error',
+          showCancel: false,
+        }
+        this.showModal = true
         return
       } else if (this.password !== this.passwordConfirmed) {
-        alert('Las contraseñas no coinciden ❌')
+        this.modalConfig = {
+          title: 'Error de validación',
+          message: 'Las contraseñas no coinciden. Por favor, verifica e intenta nuevamente.',
+          type: 'error',
+          showCancel: false,
+        }
+        this.showModal = true
         return
       }
       this.loading = true // ⏳ Mostrar spinner
@@ -139,12 +168,24 @@ export default {
       if (registroUsuario) {
         this.$router.push('/login')
       } else if (!registroUsuario) {
-        alert('La cuenta ya esta registrada ‼️‼️')
+        this.modalConfig = {
+          title: 'Cuenta ya registrada',
+          message: 'Este correo ya está en uso. Intenta iniciar sesión o usa otro correo.',
+          type: 'error',
+          showCancel: false,
+        }
+        this.showModal = true
         this.loading = false // Ocultar spinner
         return
       }
       this.loading = false // Ocultar spinner
-      alert('Registro exitoso, valída la cuenta con tu correo ✅')
+      this.modalConfig = {
+        title: 'Registro exitoso',
+        message: 'Valída tu cuenta con el correo enviado ✅',
+        type: 'success',
+        showCancel: false,
+      }
+      this.showModal = true
     },
   },
 }
@@ -189,7 +230,6 @@ export default {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   border: none;
-  padding: 12px;
   font-size: 0.9rem;
 }
 

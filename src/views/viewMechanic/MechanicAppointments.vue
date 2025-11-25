@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
+import { useTheme } from '@/composables/useTheme'
+const { isDark } = useTheme()
 
 interface Appointment {
   id: number
@@ -27,7 +29,7 @@ const modalConfig = ref({
   message: '',
   type: 'info' as 'info' | 'success' | 'warning' | 'error',
   showCancel: false,
-  action: null as (() => void) | null
+  action: null as (() => void) | null,
 })
 
 const loadAppointments = async () => {
@@ -49,7 +51,7 @@ const confirmAccept = (appt: Appointment) => {
       } else {
         // Handle error
       }
-    }
+    },
   }
   showModal.value = true
 }
@@ -70,7 +72,7 @@ const confirmReject = (appt: Appointment) => {
         await loadAppointments()
         showModal.value = false
       }
-    }
+    },
   }
   showModal.value = true
 }
@@ -90,10 +92,10 @@ onMounted(() => {
 
 <template>
   <div class="mechanic-appointments">
-    <h2 class="section-title">Gestión de Citas</h2>
+    <h2 class="section-title" :class="{ 'dark-text': isDark }">Gestión de Citas</h2>
 
     <div class="appointments-list">
-      <div v-if="appointments.length === 0" class="no-data">
+      <div v-if="appointments.length === 0" class="no-data" :class="{ 'dark-text': isDark }">
         No hay citas pendientes.
       </div>
 
@@ -102,7 +104,7 @@ onMounted(() => {
           <span class="date">{{ new Date(appt.date).toLocaleDateString() }} - {{ appt.time }}</span>
           <span class="status" :class="appt.status.toLowerCase()">{{ appt.status }}</span>
         </div>
-        
+
         <div class="appt-body">
           <div class="client-info">
             <h4>Cliente</h4>
@@ -161,7 +163,7 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .appt-header {
@@ -184,9 +186,18 @@ onMounted(() => {
   font-weight: bold;
 }
 
-.status.pending { background: #f1c40f; color: white; }
-.status.approved { background: #2ecc71; color: white; }
-.status.rejected { background: #e74c3c; color: white; }
+.status.pending {
+  background: #f1c40f;
+  color: white;
+}
+.status.approved {
+  background: #2ecc71;
+  color: white;
+}
+.status.rejected {
+  background: #e74c3c;
+  color: white;
+}
 
 .appt-body {
   display: grid;
@@ -247,7 +258,10 @@ p {
 
 .no-data {
   text-align: center;
-  color: #95a5a6;
+  color: #292e2e;
   padding: 40px;
+}
+.dark-text {
+  color: #ecf0f1;
 }
 </style>

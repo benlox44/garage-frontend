@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
 import { useRouter } from 'vue-router'
+import { useTheme } from '@/composables/useTheme'
+const { isDark } = useTheme()
 
 const router = useRouter()
 const user = ref({
@@ -139,7 +141,7 @@ onMounted(() => {
 
 <template>
   <div class="profile-container">
-    <h2 class="section-title">Mi Perfil</h2>
+    <h2 class="section-title" :class="{ 'dark-text': isDark }">Mi Perfil</h2>
 
     <div class="profile-card">
       <div class="profile-header">
@@ -242,6 +244,9 @@ onMounted(() => {
   color: #2c3e50;
   margin-bottom: 20px;
   text-align: center;
+}
+.dark-text {
+  color: white !important;
 }
 
 .profile-card {

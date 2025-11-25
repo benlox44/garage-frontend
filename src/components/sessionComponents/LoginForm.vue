@@ -1,5 +1,5 @@
 <template>
-  <v-container class="container-login">
+  <v-container class="container-login" style="margin-top: 60px">
     <h1 class="login-title">Inicia sesión en tu cuenta!!👌</h1>
     <v-form v-model="valid" ref="form" class="form-wrapper">
       <v-row justify="center">
@@ -104,8 +104,8 @@ export default {
         message: '',
         type: 'info',
         showCancel: false,
-        action: null
-      }
+        action: null,
+      },
     }
   },
   methods: {
@@ -122,7 +122,7 @@ export default {
         message,
         type,
         showCancel: false,
-        action: null
+        action: null,
       }
       this.showModal = true
     },
@@ -130,7 +130,6 @@ export default {
       const isValid = await this.$refs.form.validate()
 
       if (!isValid.valid) {
-        console.log('Formulario inválido ❌')
         return
       }
       this.loading = true // inicia spinner
@@ -139,21 +138,16 @@ export default {
         email: this.email,
         password: this.password,
       }
-      console.log('Formulario válido ✅', formData)
       //comprobar con backend
 
       try {
         const access_login = await api.login(formData.email, formData.password)
-        console.log('Respuesta del servidor:', access_login)
         if (access_login == true) {
-          console.log('Login exitoso ✅')
           // Redirigir a la vista de usuario (ruta definida en tu router)
           const userData = await api.perfil()
-          console.log('Datos del usuario obtenidos', userData.email, userData.name, userData.rol)
           localStorage.setItem('userEmail', userData.email)
           localStorage.setItem('userName', userData.name)
           localStorage.setItem('userRol', userData.rol)
-          console.log('Rol del usuario:', userData.rol, typeof userData.rol)
           if (userData.rol == 'ADMIN') {
             this.$router.push('/admin')
           } else if (userData.rol == 'CLIENT') {
@@ -164,29 +158,52 @@ export default {
         } else {
           this.failedAttempts++
           this.$emit('login-failed')
-          
+
           if (this.failedAttempts >= 3) {
             // Emitir evento de cuenta bloqueada después de 3 intentos
             this.$emit('account-blocked')
-            this.showModalMessage('Cuenta Bloqueada', 'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.', 'error')
+            this.showModalMessage(
+              'Cuenta Bloqueada',
+              'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.',
+              'error',
+            )
           } else {
-            this.showModalMessage('Error', `Credenciales incorrectas (Intento ${this.failedAttempts}/3)`, 'error')
+            this.showModalMessage(
+              'Error',
+              `Credenciales incorrectas (Intento ${this.failedAttempts}/3)`,
+              'error',
+            )
           }
         }
       } catch (error) {
         console.error('Error de autenticación ❌', error)
         this.failedAttempts++
         this.$emit('login-failed')
-        
+
         // Verificar si el error indica cuenta bloqueada
-        if (error.response?.status === 423 || error.response?.data?.message?.includes('bloqueada')) {
+        if (
+          error.response?.status === 423 ||
+          error.response?.data?.message?.includes('bloqueada')
+        ) {
           this.$emit('account-blocked')
-          this.showModalMessage('Cuenta Bloqueada', 'Tu cuenta está bloqueada. Por favor, utiliza la opción de recuperar cuenta.', 'error')
+          this.showModalMessage(
+            'Cuenta Bloqueada',
+            'Tu cuenta está bloqueada. Por favor, utiliza la opción de recuperar cuenta.',
+            'error',
+          )
         } else if (this.failedAttempts >= 3) {
           this.$emit('account-blocked')
-          this.showModalMessage('Cuenta Bloqueada', 'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.', 'error')
+          this.showModalMessage(
+            'Cuenta Bloqueada',
+            'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.',
+            'error',
+          )
         } else {
-          this.showModalMessage('Error', `Credenciales incorrectas (Intento ${this.failedAttempts}/3)`, 'error')
+          this.showModalMessage(
+            'Error',
+            `Credenciales incorrectas (Intento ${this.failedAttempts}/3)`,
+            'error',
+          )
         }
       } finally {
         this.loading = false // ✅ detener spinner ocurra lo que ocurra
@@ -250,7 +267,6 @@ export default {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   border: none;
-  padding: 12px;
   font-size: 0.9rem;
 }
 
