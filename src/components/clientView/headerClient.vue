@@ -198,6 +198,20 @@
                         Ordenes de trabajo
                     </v-btn>
                     <v-btn 
+                        @click="$emit('navigate', 'vehicles')"
+                        variant="outlined" 
+                        color="red"
+                        size="default"
+                        rounded="xl"
+                        class="auth-button font-weight-bold" 
+                        :style="{
+                            borderWidth: '2px',
+                            backdropFilter: 'blur(4px)'
+                        }"
+                    >
+                        Mis Vehículos
+                    </v-btn>
+                    <v-btn 
                         @click="$emit('navigate', 'appointments')"
                         variant="outlined" 
                         color="red"
@@ -267,6 +281,13 @@
                                 </template>
                                 <v-list-item-title>Ordenes de trabajo</v-list-item-title>
                             </v-list-item>
+
+                            <v-list-item @click="$emit('navigate', 'vehicles')">
+                                <template v-slot:prepend>
+                                    <v-icon color="red">mdi-car</v-icon>
+                                </template>
+                                <v-list-item-title>Mis Vehículos</v-list-item-title>
+                            </v-list-item>
                             
                             <v-list-item @click="$emit('navigate', 'appointments')">
                                 <template v-slot:prepend>
@@ -301,6 +322,15 @@
             </v-row>
         </v-container>
     </v-app-bar>
+    <Modal
+      :show="showModal"
+      :title="modalConfig.title"
+      :message="modalConfig.message"
+      :type="modalConfig.type"
+      :show-cancel="modalConfig.showCancel"
+      @close="showModal = false"
+      @confirm="handleConfirm"
+    />
 </template>
 
 
@@ -310,10 +340,27 @@ import { useTheme } from '@/composables/useTheme'
 import { RouterLink, useRouter } from 'vue-router'
 import api from '@/services/garage-back-api'
 import { ref, computed } from 'vue'
+import Modal from '@/components/shared/Modal.vue'
 
 const { isDark } = useTheme()
-
 const router = useRouter()
+
+const showModal = ref(false)
+const modalConfig = ref({
+  title: '',
+  message: '',
+  type: 'info' as 'info' | 'success' | 'warning' | 'error',
+  showCancel: false,
+  action: null as (() => void) | null
+})
+
+const handleConfirm = () => {
+  if (modalConfig.value.action) {
+    modalConfig.value.action()
+  } else {
+    showModal.value = false
+  }
+}
 
 // Notifications state
 interface Notification {
@@ -413,10 +460,17 @@ const viewAllNotifications = () => {
 }
 
 const handleLogout = () => {
-  if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-    api.logout()
-    router.push('/')
+  modalConfig.value = {
+    title: 'Cerrar Sesión',
+    message: '¿Estás seguro de que deseas cerrar sesión?',
+    type: 'warning',
+    showCancel: true,
+    action: () => {
+      api.logout()
+      router.push('/')
+    }
   }
+  showModal.value = true
 }
 </script>
 

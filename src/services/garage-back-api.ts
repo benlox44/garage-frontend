@@ -100,6 +100,140 @@ const api = {
     }
   },
 
+  // ===== USER PROFILE METHODS =====
+  async updateProfile(data: { name?: string; phone?: string }) {
+    try {
+      await http.patch('/users/me', data)
+      return true
+    } catch (error) {
+      console.error('Error al actualizar perfil:', error)
+      return false
+    }
+  },
+
+  async updatePassword(data: { oldPassword: string; newPassword: string }) {
+    try {
+      await http.patch('/users/me/password', data)
+      return true
+    } catch (error) {
+      console.error('Error al actualizar contraseña:', error)
+      return false
+    }
+  },
+
+  async deleteMe() {
+    try {
+      await http.delete('/users/me')
+      return true
+    } catch (error) {
+      console.error('Error al eliminar cuenta:', error)
+      return false
+    }
+  },
+
+  // ===== WORK ORDERS METHODS =====
+  async getClientWorkOrders() {
+    try {
+      const response = await http.get('/work-orders/client')
+      return response.data.data
+    } catch (error) {
+      console.error('Error al obtener órdenes de trabajo:', error)
+      return []
+    }
+  },
+
+  async getMechanicWorkOrders() {
+    try {
+      const response = await http.get('/work-orders/mechanic')
+      return response.data.data
+    } catch (error) {
+      console.error('Error al obtener órdenes de trabajo (mecánico):', error)
+      return []
+    }
+  },
+
+  async createWorkOrder(data: any) {
+    try {
+      const response = await http.post('/work-orders', data)
+      return response.data
+    } catch (error) {
+      console.error('Error al crear orden de trabajo:', error)
+      return null
+    }
+  },
+
+  async getWorkOrderById(id: number) {
+    try {
+      const response = await http.get(`/work-orders/${id}`)
+      return response.data
+    } catch (error) {
+      console.error('Error al obtener orden de trabajo:', error)
+      return null
+    }
+  },
+
+  async updateWorkOrder(id: number, data: any) {
+    try {
+      const response = await http.patch(`/work-orders/${id}`, data)
+      return response.data
+    } catch (error) {
+      console.error('Error al actualizar orden de trabajo:', error)
+      return null
+    }
+  },
+
+  async addWorkOrderItems(id: number, data: any) {
+    try {
+      const response = await http.post(`/work-orders/${id}/items`, data)
+      return response.data
+    } catch (error) {
+      console.error('Error al agregar ítems a la orden:', error)
+      return null
+    }
+  },
+
+  async approveWorkOrderItem(itemId: number) {
+    try {
+      await http.patch(`/work-orders/items/${itemId}/approve`)
+      return true
+    } catch (error) {
+      console.error('Error al aprobar ítem:', error)
+      return false
+    }
+  },
+
+  // ===== APPOINTMENTS MECHANIC METHODS =====
+  async getMechanicAppointments() {
+    try {
+      const response = await http.get('/appointments/mechanic')
+      return response.data.data
+    } catch (error) {
+      console.error('Error al obtener citas (mecánico):', error)
+      return []
+    }
+  },
+
+  async acceptAppointment(id: number) {
+    try {
+      await http.patch(`/appointments/${id}/accept`)
+      return true
+    } catch (error) {
+      console.error('Error al aceptar cita:', error)
+      return false
+    }
+  },
+
+  async rejectAppointment(id: number, reason: string) {
+    try {
+      await http.patch(`/appointments/${id}/reject`, { reason })
+      return true
+    } catch (error) {
+      console.error('Error al rechazar cita:', error)
+      return false
+    }
+  },
+
+
   async createMechanic(name: string, email: string, password: string) {
     try {
       const response = await http.post('/users/create-mechanic', { name, email, password })
@@ -179,6 +313,77 @@ const api = {
     }
   },
 
+  // ===== SCHEDULES MECHANIC METHODS =====
+  async getMySchedules() {
+    try {
+      const response = await http.get('/schedules/my')
+      return response.data.data
+    } catch (error) {
+      console.error('Error al obtener mis horarios:', error)
+      return []
+    }
+  },
+
+  async createSchedule(data: { date: string; availableHours: string[] }) {
+    try {
+      await http.post('/schedules', data)
+      return true
+    } catch (error) {
+      console.error('Error al crear horario:', error)
+      return false
+    }
+  },
+
+  async updateSchedule(id: number, availableHours: string[]) {
+    try {
+      await http.patch(`/schedules/${id}`, { availableHours })
+      return true
+    } catch (error) {
+      console.error('Error al actualizar horario:', error)
+      return false
+    }
+  },
+
+  async deleteSchedule(id: number) {
+    try {
+      await http.delete(`/schedules/${id}`)
+      return true
+    } catch (error) {
+      console.error('Error al eliminar horario:', error)
+      return false
+    }
+  },
+
+  // ===== VEHICLES METHODS =====
+  async createVehicle(data: { brand: string; model: string; year: number; licensePlate: string }) {
+    try {
+      const response = await http.post('/users/me/vehicles', data)
+      return { success: true, message: response.data.message }
+    } catch (error: any) {
+      console.error('Error al crear vehículo:', error)
+      return { success: false, message: error.response?.data?.message || 'Error al crear vehículo' }
+    }
+  },
+
+  async updateVehicle(id: number, data: { brand?: string; model?: string; year?: number; licensePlate?: string }) {
+    try {
+      const response = await http.patch(`/users/me/vehicles/${id}`, data)
+      return { success: true, message: response.data.message }
+    } catch (error: any) {
+      console.error('Error al actualizar vehículo:', error)
+      return { success: false, message: error.response?.data?.message || 'Error al actualizar vehículo' }
+    }
+  },
+
+  async deleteVehicle(id: number) {
+    try {
+      const response = await http.delete(`/users/me/vehicles/${id}`)
+      return { success: true, message: response.data.message }
+    } catch (error: any) {
+      console.error('Error al eliminar vehículo:', error)
+      return { success: false, message: error.response?.data?.message || 'Error al eliminar vehículo' }
+    }
+  },
 }
 
 export default api

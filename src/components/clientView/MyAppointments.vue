@@ -46,12 +46,22 @@
         </div>
       </div>
     </div>
+    <Modal
+      :show="showModal"
+      :title="modalConfig.title"
+      :message="modalConfig.message"
+      :type="modalConfig.type"
+      :show-cancel="modalConfig.showCancel"
+      @close="showModal = false"
+      @confirm="handleConfirm"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import api from '@/services/garage-back-api'
+import Modal from '@/components/shared/Modal.vue'
 
 interface Mechanic {
   id: number
@@ -113,22 +123,57 @@ const refreshAppointments = async () => {
   await loadAppointments()
 }
 
-const cancelAppointment = async (id: number) => {
-  if (!confirm('¿Estás seguro de cancelar esta cita?')) return
+const showModal = ref(false)
+const modalConfig = ref({
+  title: '',
+  message: '',
+  type: 'info' as 'info' | 'success' | 'warning' | 'error',
+  showCancel: false,
+  action: null as (() => void) | null
+})
 
-  try {
-    const result = await api.cancelAppointment(id)
-    if (result.success) {
-      alert('✅ Cita cancelada exitosamente')
-      await loadAppointments()
-    } else {
-      alert(`❌ ${result.message}`)
-    }
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.message || 'Error al cancelar la cita'
-    alert(`❌ ${errorMessage}`)
-    console.error(error)
+const handleConfirm = () => {
+  if (modalConfig.value.action) {
+    modalConfig.value.action()
+  } else {
+    showModal.value = false
   }
+}
+
+const showModalMessage = (title: string, message: string, type: 'info' | 'success' | 'warning' | 'error') => {
+  modalConfig.value = {
+    title,
+    message,
+    type,
+    showCancel: false,
+    action: null
+  }
+  showModal.value = true
+}
+
+const cancelAppointment = async (id: number) => {
+  modalConfig.value = {
+    title: 'Cancelar Cita',
+    message: '¿Estás seguro de cancelar esta cita?',
+    type: 'warning',
+    showCancel: true,
+    action: async () => {
+      try {
+        const result = await api.cancelAppointment(id)
+        if (result.success) {
+          showModalMessage('Éxito', 'Cita cancelada exitosamente', 'success')
+          await loadAppointments()
+        } else {
+          showModalMessage('Error', result.message, 'error')
+        }
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || 'Error al cancelar la cita'
+        showModalMessage('Error', errorMessage, 'error')
+        console.error(error)
+      }
+    }
+  }
+  showModal.value = true
 }
 
 const getStatusText = (status: string) => {

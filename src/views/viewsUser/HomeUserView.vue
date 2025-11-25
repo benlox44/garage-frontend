@@ -5,12 +5,14 @@
   import ScheduleCalendar from '@/components/clientView/SheduleCalendar.vue'
   import MyAppointments from '@/components/clientView/MyAppointments.vue'
   import Orders from '@/components/clientView/Orders.vue'
+  import Profile from '@/components/clientView/Profile.vue'
+  import MyVehicles from './MyVehicles.vue'
 
   const { isDark } = useTheme()
-  const currentSection = ref<'home' | 'orders' | 'appointments' | 'profile'>('home')
+  const currentSection = ref<'home' | 'orders' | 'appointments' | 'vehicles' | 'profile'>('home')
   const activeTab = ref<'calendar' | 'appointments'>('calendar')
 
-  const handleNavigation = (section: 'orders' | 'appointments' | 'profile') => {
+  const handleNavigation = (section: 'orders' | 'appointments' | 'vehicles' | 'profile') => {
     currentSection.value = section
   }
 </script>
@@ -38,6 +40,12 @@
               <h3>Ver Órdenes</h3>
               <p>Revisa el estado de tus servicios</p>
             </button>
+
+            <button @click="currentSection = 'vehicles'" class="action-card">
+              <v-icon size="48" color="#D90000">mdi-car</v-icon>
+              <h3>Mis Vehículos</h3>
+              <p>Gestiona tus vehículos registrados</p>
+            </button>
             
             <button @click="currentSection = 'profile'" class="action-card">
               <v-icon size="48" color="#D90000">mdi-account</v-icon>
@@ -51,6 +59,11 @@
       <!-- Orders Section -->
       <div v-else-if="currentSection === 'orders'" class="section-content">
         <Orders />
+      </div>
+
+      <!-- Vehicles Section -->
+      <div v-else-if="currentSection === 'vehicles'" class="section-content">
+        <MyVehicles />
       </div>
 
       <!-- Appointments Section -->
@@ -82,11 +95,7 @@
 
       <!-- Profile Section -->
       <div v-else-if="currentSection === 'profile'" class="section-content">
-        <div class="placeholder-section">
-          <v-icon size="80" color="#D90000">mdi-account-circle</v-icon>
-          <h2>Mi Perfil</h2>
-          <p>Sección en construcción...</p>
-        </div>
+        <Profile />
       </div>
     </div>
   </div>

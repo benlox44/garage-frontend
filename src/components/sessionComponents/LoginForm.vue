@@ -47,13 +47,24 @@
         </v-col>
       </v-row>
     </v-form>
+    <Modal
+      :show="showModal"
+      :title="modalConfig.title"
+      :message="modalConfig.message"
+      :type="modalConfig.type"
+      :show-cancel="modalConfig.showCancel"
+      @close="showModal = false"
+      @confirm="handleConfirm"
+    />
   </v-container>
 </template>
 
 <script>
 import api from '@/services/garage-back-api'
+import Modal from '@/components/shared/Modal.vue'
 
 export default {
+  components: { Modal },
   emits: ['login-failed', 'account-blocked', 'forgot-password'],
   data() {
     return {
@@ -87,9 +98,34 @@ export default {
       checkbox: false,
       loading: false,
       failedAttempts: 0,
+      showModal: false,
+      modalConfig: {
+        title: '',
+        message: '',
+        type: 'info',
+        showCancel: false,
+        action: null
+      }
     }
   },
   methods: {
+    handleConfirm() {
+      if (this.modalConfig.action) {
+        this.modalConfig.action()
+      } else {
+        this.showModal = false
+      }
+    },
+    showModalMessage(title, message, type) {
+      this.modalConfig = {
+        title,
+        message,
+        type,
+        showCancel: false,
+        action: null
+      }
+      this.showModal = true
+    },
     async handleSubmit() {
       const isValid = await this.$refs.form.validate()
 
@@ -132,9 +168,9 @@ export default {
           if (this.failedAttempts >= 3) {
             // Emitir evento de cuenta bloqueada después de 3 intentos
             this.$emit('account-blocked')
-            alert('Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.')
+            this.showModalMessage('Cuenta Bloqueada', 'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.', 'error')
           } else {
-            alert(`Credenciales incorrectas (Intento ${this.failedAttempts}/3)`)
+            this.showModalMessage('Error', `Credenciales incorrectas (Intento ${this.failedAttempts}/3)`, 'error')
           }
         }
       } catch (error) {
@@ -145,12 +181,12 @@ export default {
         // Verificar si el error indica cuenta bloqueada
         if (error.response?.status === 423 || error.response?.data?.message?.includes('bloqueada')) {
           this.$emit('account-blocked')
-          alert('Tu cuenta está bloqueada. Por favor, utiliza la opción de recuperar cuenta.')
+          this.showModalMessage('Cuenta Bloqueada', 'Tu cuenta está bloqueada. Por favor, utiliza la opción de recuperar cuenta.', 'error')
         } else if (this.failedAttempts >= 3) {
           this.$emit('account-blocked')
-          alert('Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.')
+          this.showModalMessage('Cuenta Bloqueada', 'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.', 'error')
         } else {
-          alert(`Credenciales incorrectas (Intento ${this.failedAttempts}/3)`)
+          this.showModalMessage('Error', `Credenciales incorrectas (Intento ${this.failedAttempts}/3)`, 'error')
         }
       } finally {
         this.loading = false // ✅ detener spinner ocurra lo que ocurra
