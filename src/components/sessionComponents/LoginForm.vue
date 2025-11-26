@@ -141,8 +141,8 @@ export default {
       //comprobar con backend
 
       try {
-        const access_login = await api.login(formData.email, formData.password)
-        if (access_login == true) {
+        const result = await api.login(formData.email, formData.password)
+        if (result.success) {
           // Redirigir a la vista de usuario (ruta definida en tu router)
           const userData = await api.perfil()
           localStorage.setItem('userEmail', userData.email)
@@ -156,6 +156,11 @@ export default {
             this.$router.push('/mechanic')
           }
         } else {
+          if (result.message === 'Account does not exist') {
+            this.showModalMessage('Error', 'La cuenta no existe', 'error')
+            return
+          }
+
           this.failedAttempts++
           this.$emit('login-failed')
 

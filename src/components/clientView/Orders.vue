@@ -14,7 +14,7 @@ interface WorkOrder {
   id: number
   status: string
   vehicle: {
-    plate: string
+    licensePlate: string
     brand: string
     model: string
   }
@@ -126,18 +126,52 @@ onMounted(() => {
         <p>No tienes órdenes de trabajo activas.</p>
       </div>
 
-      <div v-for="order in orders" :key="order.id" class="order-card" @click="viewDetails(order)">
-        <div class="order-header">
-          <span class="order-id">#{{ order.id }}</span>
-          <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
+      <div
+        v-for="order in orders"
+        :key="order.id"
+        class="order-card"
+        @click="viewDetails(order)"
+        :style="{
+          backgroundColor: isDark ? '#0b0b0b' : '#ffffff',
+          color: isDark ? '#ffffff' : '#111827',
+          border: isDark ? '1px solid rgba(217,0,0,0.12)' : '1px solid rgba(217,0,0,0.08)',
+          boxShadow: isDark ? '0 2px 6px rgba(0,0,0,0.6)' : '0 2px 5px rgba(0,0,0,0.05)'
+        }"
+      >
+        <div class="order-header" :style="{ color: isDark ? 'rgba(255,255,255,0.85)' : '#6b7280' }">
+          <span class="order-id" :style="{ fontWeight: 700 }">#{{ order.id }}</span>
+          <span class="order-date" :style="{ fontSize: '0.9em' }">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
         </div>
+
         <div class="order-vehicle">
-          <h3>{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
-          <span class="plate">{{ order.vehicle.plate }}</span>
+          <h3 :style="{ margin: 0, color: isDark ? '#ffdede' : '#1f2937' }">{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
+          <span
+        class="plate"
+        :style="{
+          background: isDark ? 'rgba(217,0,0,0.12)' : '#fff',
+          color: isDark ? '#ffdede' : '#d90000',
+          border: isDark ? '1px solid rgba(217,0,0,0.22)' : '1px solid rgba(217,0,0,0.15)',
+          padding: '2px 6px',
+          borderRadius: '4px',
+          fontSize: '0.85em',
+          fontWeight: '700'
+        }"
+          >
+        {{ order.vehicle.licensePlate || 'Sin patente' }}
+          </span>
         </div>
+
         <div class="order-status">
-          <span class="status-badge" :style="{ backgroundColor: getStatusColor(order.status) }">
-            {{ getStatusText(order.status) }}
+          <span
+        class="status-badge"
+        :style="{
+          backgroundColor: getStatusColor(order.status),
+          color: '#ffffff',
+          border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)',
+          boxShadow: isDark ? '0 1px 0 rgba(0,0,0,0.4) inset' : 'none'
+        }"
+          >
+        {{ getStatusText(order.status) }}
           </span>
         </div>
       </div>
@@ -148,55 +182,66 @@ onMounted(() => {
         <v-icon>mdi-arrow-left</v-icon> Volver
       </button>
 
-      <div class="details-card">
-        <div class="details-header">
-          <h2>Orden #{{ selectedOrder.id }}</h2>
-          <span
-            class="status-badge"
-            :style="{ backgroundColor: getStatusColor(selectedOrder.status) }"
-          >
-            {{ getStatusText(selectedOrder.status) }}
+      <div class="details-card" :class="{ 'dark-card': isDark }" :style="{
+        backgroundColor: isDark ? '#0b0b0b' : '#ffffff',
+        color: isDark ? '#ffffff' : '#111827',
+        border: isDark ? '1px solid rgba(217,0,0,0.22)' : '1px solid rgba(217,0,0,0.10)'
+      }">
+        <div class="details-header" :style="{ borderBottomColor: isDark ? 'rgba(217,0,0,0.18)' : '#eee' }">
+          <h2 :style="{ color: isDark ? '#ffffff' : '#111827' }">Orden #{{ selectedOrder.id }}</h2>
+          <span class="status-badge" :style="{
+        backgroundColor: getStatusColor(selectedOrder.status),
+        color: '#ffffff',
+        border: isDark ? '1px solid rgba(217,0,0,0.30)' : '1px solid rgba(217,0,0,0.08)'
+          }">
+        {{ getStatusText(selectedOrder.status) }}
           </span>
         </div>
 
-        <div class="vehicle-info">
-          <h3>Vehículo</h3>
-          <p>
-            {{ selectedOrder.vehicle.brand }} {{ selectedOrder.vehicle.model }} -
-            {{ selectedOrder.vehicle.plate }}
+        <div class="vehicle-info" :style="{ marginBottom: '12px' }">
+          <h3 :style="{ color: isDark ? '#ffdede' : '#111827' }">Vehículo</h3>
+          <p :style="{ color: isDark ? '#ffdede' : '#4b5563' }">
+        {{ selectedOrder.vehicle.brand }} {{ selectedOrder.vehicle.model }} -
+        <span
+          :style="{ background: isDark ? 'rgba(217,0,0,0.12)' : '#fff', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', color: isDark ? '#ffdede' : '#d90000', border: isDark ? '1px solid rgba(217,0,0,0.22)' : '1px solid rgba(217,0,0,0.12)' }">
+          {{ selectedOrder.vehicle.licensePlate || 'Sin patente' }}
+        </span>
           </p>
         </div>
 
         <div class="items-list">
-          <h3>Ítems y Servicios</h3>
-          <div v-if="selectedOrder.items.length === 0" class="no-items">
-            No hay ítems registrados.
+          <h3 :style="{ color: isDark ? '#ffdede' : '#111827' }">Ítems y Servicios</h3>
+          <div v-if="selectedOrder.items.length === 0" class="no-items"
+        :style="{ color: isDark ? '#9fb2cc' : '#7f8c8d' }">
+        No hay ítems registrados.
           </div>
-          <div v-for="item in selectedOrder.items" :key="item.id" class="item-row">
-            <div class="item-info">
-              <span class="item-desc">{{ item.description }}</span>
-              <span class="item-cost">${{ item.cost }}</span>
-            </div>
-            <div class="item-action">
-              <span v-if="item.isApproved" class="approved-badge">
-                <v-icon color="green" size="small">mdi-check-circle</v-icon> Aprobado
-              </span>
-              <button v-else class="approve-btn" @click.stop="approveItem(item)">Aprobar</button>
-            </div>
+          <div v-for="item in selectedOrder.items" :key="item.id" class="item-row" :style="{
+        borderBottomColor: isDark ? 'rgba(217,0,0,0.06)' : '#f5f5f5'
+          }">
+        <div class="item-info">
+          <span class="item-desc" :style="{ color: isDark ? '#ffffff' : '#1f2937' }">{{ item.description }}</span>
+          <span class="item-cost" :style="{ color: isDark ? '#ffdede' : '#7f8c8d' }">${{ item.cost }}</span>
+        </div>
+        <div class="item-action">
+          <span v-if="item.isApproved" class="approved-badge" :style="{ color: isDark ? '#34d399' : '#27ae60' }">
+            <v-icon color="green" size="small">mdi-check-circle</v-icon> Aprobado
+          </span>
+          <button v-else class="approve-btn" @click.stop="approveItem(item)" :style="{
+            backgroundColor: isDark ? '#059669' : '#2ecc71',
+            color: 'white',
+            border: isDark ? '1px solid rgba(217,0,0,0.06)' : 'none',
+            boxShadow: isDark ? '0 1px 0 rgba(0,0,0,0.4) inset' : 'none'
+          }">
+            Aprobar
+          </button>
+        </div>
           </div>
         </div>
       </div>
     </div>
 
-    <Modal
-      :show="showModal"
-      :title="modalConfig.title"
-      :message="modalConfig.message"
-      :type="modalConfig.type"
-      :show-cancel="modalConfig.showCancel"
-      @close="showModal = false"
-      @confirm="handleConfirm"
-    />
+    <Modal :show="showModal" :title="modalConfig.title" :message="modalConfig.message" :type="modalConfig.type"
+      :show-cancel="modalConfig.showCancel" @close="showModal = false" @confirm="handleConfirm" />
   </div>
 </template>
 
@@ -212,6 +257,7 @@ onMounted(() => {
   margin-bottom: 20px;
   text-align: center;
 }
+
 .dark-text {
   color: white !important;
 }

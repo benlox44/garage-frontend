@@ -9,6 +9,7 @@ interface Vehicle {
   model: string
   year: number
   licensePlate: string
+  color: string
 }
 
 const vehicles = ref<Vehicle[]>([])
@@ -23,6 +24,7 @@ const formData = ref({
   model: '',
   year: new Date().getFullYear(),
   licensePlate: '',
+  color: ''
 })
 
 // Modal config
@@ -37,12 +39,12 @@ const modalConfig = ref({
 
 const showModalMessage = (
   title: string,
-  message: string,
+  message: string | string[],
   type: 'info' | 'success' | 'warning' | 'error',
 ) => {
   modalConfig.value = {
     title,
-    message,
+    message: Array.isArray(message) ? message.join(', ') : message,
     type,
     showCancel: false,
     action: null,
@@ -71,6 +73,7 @@ const openCreateModal = () => {
     model: '',
     year: new Date().getFullYear(),
     licensePlate: '',
+    color: ''
   }
   showFormModal.value = true
 }
@@ -83,12 +86,13 @@ const openEditModal = (vehicle: Vehicle) => {
     model: vehicle.model,
     year: vehicle.year,
     licensePlate: vehicle.licensePlate,
+    color: vehicle.color || ''
   }
   showFormModal.value = true
 }
 
 const saveVehicle = async () => {
-  if (!formData.value.brand || !formData.value.model || !formData.value.licensePlate) {
+  if (!formData.value.brand || !formData.value.model || !formData.value.licensePlate || !formData.value.color) {
     showModalMessage('Error', 'Por favor completa todos los campos obligatorios.', 'warning')
     return
   }
@@ -240,6 +244,14 @@ onMounted(() => {
               v-model="formData.licensePlate"
               label="Placa / Matrícula"
               prepend-inner-icon="mdi-card-account-details"
+              variant="outlined"
+              color="red"
+              class="mb-2"
+            ></v-text-field>
+            <v-text-field
+              v-model="formData.color"
+              label="Color"
+              prepend-inner-icon="mdi-palette"
               variant="outlined"
               color="red"
             ></v-text-field>

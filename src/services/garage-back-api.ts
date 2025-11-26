@@ -28,12 +28,13 @@ const api = {
     try {
       const response = await http.post('/auth/login', { email, password })
       const token = await response.data.access_token
-      if (!token) return false
+      if (!token) return { success: false, message: 'No se recibió el token' }
 
       localStorage.setItem('token', token)
-      return true
-    } catch (error) {
-      return false
+      return { success: true }
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Error al iniciar sesión'
+      return { success: false, message }
     }
   },
 
@@ -167,6 +168,16 @@ const api = {
     } catch (error) {
       console.error('Error al obtener orden de trabajo:', error)
       return null
+    }
+  },
+
+  async getWorkOrdersByLicensePlate(licensePlate: string) {
+    try {
+      const response = await http.get(`/work-orders/vehicle/${licensePlate}`)
+      return response.data
+    } catch (error) {
+      console.error('Error al obtener historial del vehículo:', error)
+      return { data: [] }
     }
   },
 
@@ -363,7 +374,7 @@ const api = {
   },
 
   // ===== VEHICLES METHODS =====
-  async createVehicle(data: { brand: string; model: string; year: number; licensePlate: string }) {
+  async createVehicle(data: { brand: string; model: string; year: number; licensePlate: string; color: string }) {
     try {
       const response = await http.post('/users/me/vehicles', data)
       return { success: true, message: response.data.message }
@@ -375,7 +386,7 @@ const api = {
 
   async updateVehicle(
     id: number,
-    data: { brand?: string; model?: string; year?: number; licensePlate?: string },
+    data: { brand?: string; model?: string; year?: number; licensePlate?: string; color?: string },
   ) {
     try {
       const response = await http.patch(`/users/me/vehicles/${id}`, data)

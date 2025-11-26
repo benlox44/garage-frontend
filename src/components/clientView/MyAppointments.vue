@@ -279,6 +279,7 @@ const formatDate = (date: string) => {
   border-radius: 20px;
   font-weight: bold;
   font-size: 0.9rem;
+  color: #000000;
 }
 
 .appointment-details {

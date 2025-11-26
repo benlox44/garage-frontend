@@ -29,11 +29,15 @@ const selectedOrder = ref<WorkOrder | null>(null)
 const showModal = ref(false)
 const showCreateModal = ref(false)
 const newOrderForm = ref({
-  vehicleId: null as number | null,
+  licensePlate: '',
   description: '',
   estimatedCost: 0,
   requestedServices: '',
 })
+
+const historySearch = ref('')
+const vehicleHistory = ref<WorkOrder[]>([])
+const showHistory = ref(false)
 
 const newItemForm = ref({
   description: '',
@@ -53,9 +57,22 @@ const loadOrders = async () => {
   orders.value = data
 }
 
+const searchHistory = async () => {
+  if (!historySearch.value) return
+  const data = await api.getWorkOrdersByLicensePlate(historySearch.value)
+  vehicleHistory.value = data.data || []
+  showHistory.value = true
+}
+
+const closeHistory = () => {
+  showHistory.value = false
+  vehicleHistory.value = []
+  historySearch.value = ''
+}
+
 const createOrder = () => {
   newOrderForm.value = {
-    vehicleId: null,
+    licensePlate: '',
     description: '',
     estimatedCost: 0,
     requestedServices: '',
@@ -64,13 +81,13 @@ const createOrder = () => {
 }
 
 const submitOrder = async () => {
-  if (!newOrderForm.value.vehicleId || !newOrderForm.value.description) {
+  if (!newOrderForm.value.licensePlate || !newOrderForm.value.description) {
     showModalMessage('Error', 'Complete los campos obligatorios', 'warning')
     return
   }
 
   const payload = {
-    vehicleId: newOrderForm.value.vehicleId,
+    licensePlate: newOrderForm.value.licensePlate,
     description: newOrderForm.value.description,
     estimatedCost: newOrderForm.value.estimatedCost,
     requestedServices: newOrderForm.value.requestedServices
@@ -86,7 +103,7 @@ const submitOrder = async () => {
     showCreateModal.value = false
     await loadOrders()
   } else {
-    showModalMessage('Error', 'No se pudo crear la orden. Verifique el ID del vehículo.', 'error')
+    showModalMessage('Error', 'No se pudo crear la orden. Verifique la patente del vehículo.', 'error')
   }
 }
 
@@ -191,6 +208,50 @@ onMounted(() => {
       <button @click="createOrder" class="create-btn"><v-icon>mdi-plus</v-icon> Nueva Orden</button>
     </div>
 
+    <!-- History Search Section -->
+    <div class="history-search-section mb-4">
+      <div class="search-box d-flex gap-2">
+        <v-text-field
+          v-model="historySearch"
+          label="Buscar historial por patente"
+          variant="outlined"
+          density="compact"
+          hide-details
+          @keyup.enter="searchHistory"
+          append-inner-icon="mdi-magnify"
+          @click:append-inner="searchHistory"
+        ></v-text-field>
+        <v-btn color="primary" @click="searchHistory">Buscar</v-btn>
+      </div>
+
+      <div v-if="showHistory" class="history-results mt-4">
+        <div class="history-header d-flex justify-space-between align-center mb-2">
+          <h3>Historial del Vehículo: {{ historySearch }}</h3>
+          <v-btn size="small" color="grey" variant="text" @click="closeHistory">Cerrar</v-btn>
+        </div>
+        <div v-if="vehicleHistory.length === 0" class="no-history pa-4 text-center bg-grey-lighten-4 rounded">
+          No hay historial para este vehículo.
+        </div>
+        <div v-else class="history-list">
+          <div v-for="order in vehicleHistory" :key="order.id" class="order-card history-card mb-2" @click="viewDetails(order)">
+            <div class="order-header">
+              <span class="order-id">#{{ order.id }}</span>
+              <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
+            </div>
+            <div class="order-vehicle">
+              <h3>{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
+              <span class="plate">{{ order.vehicle.plate }}</span>
+            </div>
+            <div class="order-status">
+              <span class="status-badge" :style="{ backgroundColor: getStatusColor(order.status) }">
+                {{ order.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div v-if="!selectedOrder" class="orders-list">
       <div v-if="orders.length === 0" class="no-orders">No hay órdenes de trabajo.</div>
 
@@ -282,13 +343,12 @@ onMounted(() => {
         <v-card-text class="pa-4">
           <v-form @submit.prevent="submitOrder">
             <v-text-field
-              v-model.number="newOrderForm.vehicleId"
-              label="ID del Vehículo"
-              type="number"
+              v-model="newOrderForm.licensePlate"
+              label="Patente del Vehículo"
               variant="outlined"
               color="red"
               class="mb-2"
-              hint="Ingrese el ID del vehículo del cliente"
+              hint="Ingrese la patente del vehículo del cliente"
               persistent-hint
             ></v-text-field>
 
@@ -507,5 +567,16 @@ onMounted(() => {
   gap: 5px;
   margin-bottom: 15px;
   font-weight: bold;
+}
+
+.history-search-section {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.history-card {
+  border-left: 4px solid #3498db;
 }
 </style>
