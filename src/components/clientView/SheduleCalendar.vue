@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
+import { useTheme } from '@/composables/useTheme'
+const { isDark } = useTheme()
 
 interface Mechanic {
   id: number
@@ -203,7 +205,7 @@ onMounted(() => {
 
         <div class="form-group">
           <label>Selecciona tu Vehículo:</label>
-          <select v-model="selectedVehicleId" class="form-select">
+          <select v-model="selectedVehicleId" class="form-select" :class="{ 'dark-theme': isDark }">
             <option :value="null" disabled>-- Seleccionar --</option>
             <option v-for="vehicle in vehicles" :key="vehicle.id" :value="vehicle.id">
               {{ vehicle.licensePlate }} - {{ vehicle.brand }} {{ vehicle.model }}
@@ -214,7 +216,7 @@ onMounted(() => {
           </p>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" :class="{ 'dark-theme': isDark }">
           <label>Descripción del servicio (Opcional):</label>
           <textarea
             v-model="description"
@@ -397,6 +399,9 @@ onMounted(() => {
 .form-textarea {
   min-height: 80px;
   resize: vertical;
+}
+.dark-theme {
+  color: #333;
 }
 
 .error-text {

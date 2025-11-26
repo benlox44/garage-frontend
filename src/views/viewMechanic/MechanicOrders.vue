@@ -54,7 +54,7 @@ const modalConfig = ref({
 
 const loadOrders = async () => {
   const data = await api.getMechanicWorkOrders()
-  orders.value = data
+  orders.value = (data as WorkOrder[]).sort((a, b) => a.id - b.id) // 👈 ORDENADO DE MAYOR A MENOR
 }
 
 const searchHistory = async () => {
@@ -103,7 +103,11 @@ const submitOrder = async () => {
     showCreateModal.value = false
     await loadOrders()
   } else {
-    showModalMessage('Error', 'No se pudo crear la orden. Verifique la patente del vehículo.', 'error')
+    showModalMessage(
+      'Error',
+      'No se pudo crear la orden. Verifique la patente del vehículo.',
+      'error',
+    )
   }
 }
 
@@ -202,7 +206,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div  :class="{ 'dark-theme': isDark }">
+  <div :class="{ 'dark-theme': isDark }">
     <div class="header-actions">
       <h2 class="section-title">Gestión de Órdenes</h2>
       <button @click="createOrder" class="create-btn"><v-icon>mdi-plus</v-icon> Nueva Orden</button>
@@ -229,11 +233,19 @@ onMounted(() => {
           <h3>Historial del Vehículo: {{ historySearch }}</h3>
           <v-btn size="small" color="grey" variant="text" @click="closeHistory">Cerrar</v-btn>
         </div>
-        <div v-if="vehicleHistory.length === 0" class="no-history pa-4 text-center bg-grey-lighten-4 rounded">
+        <div
+          v-if="vehicleHistory.length === 0"
+          class="no-history pa-4 text-center bg-grey-lighten-4 rounded"
+        >
           No hay historial para este vehículo.
         </div>
         <div v-else class="history-list">
-          <div v-for="order in vehicleHistory" :key="order.id" class="order-card history-card mb-2" @click="viewDetails(order)">
+          <div
+            v-for="order in vehicleHistory"
+            :key="order.id"
+            class="order-card history-card mb-2"
+            @click="viewDetails(order)"
+          >
             <div class="order-header">
               <span class="order-id">#{{ order.id }}</span>
               <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
@@ -258,6 +270,7 @@ onMounted(() => {
       <div v-for="order in orders" :key="order.id" class="order-card" @click="viewDetails(order)">
         <div class="order-header">
           <span class="order-id">#{{ order.id }}</span>
+          <br />
           <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
         </div>
         <div class="order-vehicle">
@@ -283,16 +296,17 @@ onMounted(() => {
           <div class="details-header">
             <h2>Orden #{{ selectedOrder.id }}</h2>
             <div class="status-actions">
-              <select
-                :value="selectedOrder.status"
-                @change="(e) => updateStatus((e.target as HTMLSelectElement).value)"
-                class="status-select"
-              >
-                <option value="PENDING">Pendiente</option>
-                <option value="IN_PROGRESS">En Progreso</option>
-                <option value="COMPLETED">Completada</option>
-                <option value="CANCELLED">Cancelada</option>
-              </select>
+              <v-select
+                :items="[
+                  { title: 'Pendiente', value: 'PENDING' },
+                  { title: 'En Progreso', value: 'IN_PROGRESS' },
+                  { title: 'Completada', value: 'COMPLETED' },
+                  { title: 'Cancelada', value: 'CANCELLED' },
+                ]"
+                v-model="selectedOrder.status"
+                @update:model-value="updateStatus"
+                :class="{ 'dark-theme': isDark }"
+              />
             </div>
           </div>
 
@@ -411,7 +425,9 @@ onMounted(() => {
   min-height: 100vh;
   background-color: #ffffff;
   color: #000000;
-  transition: background-color 0.3s, color 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 
 .mechanic-orders.dark-theme {
@@ -446,7 +462,6 @@ onMounted(() => {
 }
 
 .orders-list {
-  
 }
 
 .order-card {
@@ -638,5 +653,8 @@ onMounted(() => {
 
 .history-card {
   border-left: 4px solid #d90000;
+}
+.dark-theme {
+  color: #ffffff;
 }
 </style>
