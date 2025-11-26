@@ -1,6 +1,6 @@
 <template>
   <v-container class="container-login" style="margin-top: 60px">
-    <h1 class="login-title">Inicia sesión en tu cuenta!!👌</h1>
+    <h1 class="login-title">Inicia sesión en tu cuenta!!</h1>
     <v-form v-model="valid" ref="form" class="form-wrapper">
       <v-row justify="center">
         <v-col md="12" cols="12">

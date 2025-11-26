@@ -16,7 +16,7 @@ interface WorkOrder {
   id: number
   status: string
   vehicle: {
-    plate: string
+    licensePlate: string
     brand: string
     model: string
   }
@@ -202,9 +202,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mechanic-orders">
+  <div  :class="{ 'dark-theme': isDark }">
     <div class="header-actions">
-      <h2 class="section-title" :class="{ 'dark-text': isDark }">Gestión de Órdenes</h2>
+      <h2 class="section-title">Gestión de Órdenes</h2>
       <button @click="createOrder" class="create-btn"><v-icon>mdi-plus</v-icon> Nueva Orden</button>
     </div>
 
@@ -240,7 +240,7 @@ onMounted(() => {
             </div>
             <div class="order-vehicle">
               <h3>{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
-              <span class="plate">{{ order.vehicle.plate }}</span>
+              <span class="plate">{{ order.vehicle.licensePlate }}</span>
             </div>
             <div class="order-status">
               <span class="status-badge" :style="{ backgroundColor: getStatusColor(order.status) }">
@@ -262,7 +262,7 @@ onMounted(() => {
         </div>
         <div class="order-vehicle">
           <h3>{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
-          <span class="plate">{{ order.vehicle.plate }}</span>
+          <span class="plate">{{ order.vehicle.licensePlate }}</span>
         </div>
         <div class="order-status">
           <span class="status-badge" :style="{ backgroundColor: getStatusColor(order.status) }">
@@ -300,7 +300,7 @@ onMounted(() => {
             <h3>Vehículo</h3>
             <p>
               {{ selectedOrder.vehicle.brand }} {{ selectedOrder.vehicle.model }} -
-              {{ selectedOrder.vehicle.plate }}
+              {{ selectedOrder.vehicle.licensePlate }}
             </p>
           </div>
         </div>
@@ -408,6 +408,15 @@ onMounted(() => {
   padding: 20px;
   max-width: 1000px;
   margin: 0 auto;
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #000000;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.mechanic-orders.dark-theme {
+  background-color: #000000;
+  color: #ffffff;
 }
 
 .header-actions {
@@ -418,11 +427,9 @@ onMounted(() => {
 }
 
 .section-title {
-  color: #000000;
   margin: 0;
-}
-.dark-text {
-  color: #f0f0f0 !important;
+  border-bottom: 2px solid #d90000;
+  padding-bottom: 5px;
 }
 
 .create-btn {
@@ -439,12 +446,11 @@ onMounted(() => {
 }
 
 .orders-list {
-  display: grid;
-  gap: 15px;
+  
 }
 
 .order-card {
-  background: white;
+  background: #f9f9f9;
   border-radius: 8px;
   padding: 15px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -453,6 +459,13 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border: 1px solid #ddd;
+}
+
+.dark-theme .order-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  box-shadow: 0 2px 5px rgba(255, 255, 255, 0.05);
 }
 
 .order-card:hover {
@@ -473,10 +486,16 @@ onMounted(() => {
 }
 
 .details-card {
-  background: white;
+  background: #f9f9f9;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+}
+
+.dark-theme .details-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
 }
 
 .details-header {
@@ -486,6 +505,10 @@ onMounted(() => {
   margin-bottom: 20px;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
+}
+
+.dark-theme .details-header {
+  border-bottom: 1px solid #333;
 }
 
 .status-select {
@@ -498,9 +521,13 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  background: #f9f9f9;
+  background: #eee;
   padding: 15px;
   border-radius: 4px;
+}
+
+.dark-theme .add-item-form {
+  background: #2a2a2a;
 }
 
 .input-desc {
@@ -534,6 +561,10 @@ onMounted(() => {
   border-bottom: 1px solid #f5f5f5;
 }
 
+.dark-theme .item-row {
+  border-bottom: 1px solid #333;
+}
+
 .item-info {
   display: flex;
   flex-direction: column;
@@ -545,6 +576,10 @@ onMounted(() => {
 
 .item-cost {
   color: #7f8c8d;
+}
+
+.dark-theme .item-cost {
+  color: #aaa;
 }
 
 .approved {
@@ -570,13 +605,38 @@ onMounted(() => {
 }
 
 .history-search-section {
-  background: #fff;
+  background: #f9f9f9;
   padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ddd;
+}
+
+.dark-theme .history-search-section {
+  background: #1a1a1a;
+  border: 1px solid #333;
+}
+
+.history-results {
+  margin-top: 15px;
+  border-top: 1px solid #ddd;
+  padding-top: 15px;
+}
+
+.dark-theme .history-results {
+  border-top: 1px solid #333;
+}
+
+.no-history {
+  background: #eee;
+  color: #666;
+}
+
+.dark-theme .no-history {
+  background: #2a2a2a;
+  color: #aaa;
 }
 
 .history-card {
-  border-left: 4px solid #3498db;
+  border-left: 4px solid #d90000;
 }
 </style>

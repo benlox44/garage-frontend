@@ -2,6 +2,9 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
+import { useTheme } from '@/composables/useTheme'
+
+const { isDark } = useTheme()
 
 interface Schedule {
   id: number
@@ -150,7 +153,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mechanic-schedule">
+  <div class="mechanic-schedule" :class="{ 'dark-theme': isDark }">
     <div class="header">
       <h2>Mi Agenda</h2>
       <button @click="openCreateModal" class="add-btn">
@@ -245,6 +248,15 @@ onMounted(() => {
   padding: 20px;
   max-width: 1000px;
   margin: 0 auto;
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #2c3e50;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.mechanic-schedule.dark-theme {
+  background-color: #000000;
+  color: #ffffff;
 }
 
 .header {
@@ -252,6 +264,10 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+}
+
+.mechanic-schedule.dark-theme .header h2 {
+  color: #ffffff;
 }
 
 .add-btn {
@@ -278,6 +294,11 @@ onMounted(() => {
   color: #7f8c8d;
 }
 
+.mechanic-schedule.dark-theme .loading,
+.mechanic-schedule.dark-theme .no-data {
+  color: #aaa;
+}
+
 .link-btn {
   background: none;
   border: none;
@@ -298,6 +319,13 @@ onMounted(() => {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eee;
+}
+
+.mechanic-schedule.dark-theme .schedule-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
 }
 
 .card-header {
@@ -309,10 +337,18 @@ onMounted(() => {
   padding-bottom: 10px;
 }
 
+.mechanic-schedule.dark-theme .card-header {
+  border-bottom: 1px solid #333;
+}
+
 .date {
   font-weight: bold;
   color: #2c3e50;
   font-size: 1.1em;
+}
+
+.mechanic-schedule.dark-theme .date {
+  color: #ffffff;
 }
 
 .delete-btn {
@@ -340,6 +376,11 @@ onMounted(() => {
   font-size: 0.9em;
 }
 
+.mechanic-schedule.dark-theme .hour-badge {
+  background: #333;
+  color: #ffffff;
+}
+
 /* Overlay & Modal Styles */
 .overlay {
   position: fixed;
@@ -363,10 +404,19 @@ onMounted(() => {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
+.mechanic-schedule.dark-theme .modal-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+}
+
 .modal-card h3 {
   margin-top: 0;
   color: #2c3e50;
   margin-bottom: 20px;
+}
+
+.mechanic-schedule.dark-theme .modal-card h3 {
+  color: #ffffff;
 }
 
 .form-group {
@@ -380,12 +430,22 @@ onMounted(() => {
   color: #2c3e50;
 }
 
+.mechanic-schedule.dark-theme .form-group label {
+  color: #ffffff;
+}
+
 .form-input {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 1em;
+}
+
+.mechanic-schedule.dark-theme .form-input {
+  background: #333;
+  color: #ffffff;
+  border: 1px solid #555;
 }
 
 .hours-selector {
@@ -403,11 +463,23 @@ onMounted(() => {
   transition: all 0.2s;
 }
 
+.mechanic-schedule.dark-theme .hour-toggle {
+  background: #333;
+  color: #ffffff;
+  border: 1px solid #555;
+}
+
 .hour-toggle:hover {
   border-color: #d90000;
 }
 
 .hour-toggle.active {
+  background: #d90000;
+  color: white;
+  border-color: #d90000;
+}
+
+.mechanic-schedule.dark-theme .hour-toggle.active {
   background: #d90000;
   color: white;
   border-color: #d90000;
@@ -430,6 +502,11 @@ onMounted(() => {
   font-weight: bold;
 }
 
+.mechanic-schedule.dark-theme .cancel-btn {
+  background: #333;
+  color: #ffffff;
+}
+
 .save-btn {
   padding: 10px 20px;
   border: none;
@@ -444,61 +521,9 @@ onMounted(() => {
   background: #ffcccc;
   cursor: not-allowed;
 }
-/* Fondo fijo para el modal */
-.modal-card {
-  background: #ffffff !important; /* Blanco siempre */
-  color: #2c3e50 !important; /* Texto siempre oscuro */
-}
 
-/* Labels */
-.modal-card label {
-  color: #2c3e50 !important;
-}
-
-/* Input DATE */
-.form-input {
-  color: #2c3e50 !important; /* Color del texto */
-  background-color: #ffffff !important; /* Fondo siempre blanco */
-  border: 1px solid #bbb !important;
-}
-
-/* Texto dentro del input date */
-.form-input::-webkit-datetime-edit,
-.form-input::-webkit-datetime-edit-text,
-.form-input::-webkit-datetime-edit-year-field,
-.form-input::-webkit-datetime-edit-month-field,
-.form-input::-webkit-datetime-edit-day-field {
-  color: #2c3e50 !important;
-}
-
-/* Icono del calendario */
-input.form-input::-webkit-calendar-picker-indicator {
-  opacity: 1 !important;
-  filter: none !important;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M15 2h-1V0h-2v2H8V0H6v2H5C3.3 2 2 3.3 2 5v12c0 1.7 1.3 3 3 3h10c1.7 0 3-1.3 3-3V5c0-1.7-1.3-3-3-3zm1 15c0 .6-.4 1-1 1H5c-.6 0-1-.4-1-1V8h12v9zm0-11H4V5c0-.6.4-1 1-1h1v1h2V4h4v1h2V4h1c.6 0 1 .4 1 1v1z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-/* Botones de hora */
-.hour-toggle {
-  color: #2c3e50 !important;
-  background: #ffffff !important;
-}
-
-/* Botón de hora seleccionado */
-.hour-toggle.active {
-  background: #d90000 !important;
-  color: white !important;
-}
-
-/* Botones inferiores */
-.cancel-btn,
-.save-btn {
-  color: #2c3e50;
-}
-
-.save-btn {
-  color: white !important;
+.mechanic-schedule.dark-theme .save-btn:disabled {
+  background: #550000;
+  color: #aaa;
 }
 </style>

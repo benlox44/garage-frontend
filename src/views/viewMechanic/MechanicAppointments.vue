@@ -18,7 +18,7 @@ interface Appointment {
   vehicle: {
     brand: string
     model: string
-    plate: string
+    licensePlate: string
   }
 }
 
@@ -91,11 +91,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mechanic-appointments">
-    <h2 class="section-title" :class="{ 'dark-text': isDark }">Gestión de Citas</h2>
+  <div :class="{ 'dark-theme': isDark }">
+    <h2 class="section-title">Gestión de Citas</h2>
 
     <div class="appointments-list">
-      <div v-if="appointments.length === 0" class="no-data" :class="{ 'dark-text': isDark }">
+      <div v-if="appointments.length === 0" class="no-data">
         No hay citas pendientes.
       </div>
 
@@ -114,7 +114,7 @@ onMounted(() => {
           <div class="vehicle-info">
             <h4>Vehículo</h4>
             <p>{{ appt.vehicle.brand }} {{ appt.vehicle.model }}</p>
-            <span class="plate">{{ appt.vehicle.plate }}</span>
+            <span class="plate">{{ appt.vehicle.licensePlate }}</span>
           </div>
           <div class="service-info">
             <h4>Servicio</h4>
@@ -146,122 +146,152 @@ onMounted(() => {
   padding: 20px;
   max-width: 900px;
   margin: 0 auto;
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #000000;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.mechanic-appointments.dark-theme {
+  background-color: #000000;
+  color: #ffffff;
 }
 
 .section-title {
-  color: #2c3e50;
   margin-bottom: 20px;
-  text-align: center;
+  border-bottom: 2px solid #d90000;
+  padding-bottom: 10px;
 }
 
-.appointments-list {
-  display: grid;
-  gap: 20px;
+.no-data {
+  text-align: center;
+  font-size: 1.2em;
+  margin-top: 40px;
+  color: #666;
+}
+
+.dark-theme .no-data {
+  color: #aaa;
 }
 
 .appt-card {
-  background: white;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dark-theme .appt-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  box-shadow: 0 2px 4px rgba(255,255,255,0.05);
 }
 
 .appt-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 15px;
-  padding-bottom: 10px;
   border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.dark-theme .appt-header {
+  border-bottom: 1px solid #333;
 }
 
 .date {
   font-weight: bold;
-  color: #2c3e50;
+  font-size: 1.1em;
 }
 
 .status {
-  padding: 2px 8px;
+  padding: 4px 8px;
   border-radius: 4px;
-  font-size: 0.8em;
+  font-size: 0.9em;
   font-weight: bold;
+  text-transform: uppercase;
 }
 
-.status.pending {
-  background: #f1c40f;
-  color: white;
-}
-.status.approved {
-  background: #2ecc71;
-  color: white;
-}
-.status.rejected {
-  background: #e74c3c;
-  color: white;
-}
+.status.pending { background-color: #f1c40f; color: #000; }
+.status.accepted { background-color: #2ecc71; color: #fff; }
+.status.rejected { background-color: #e74c3c; color: #fff; }
 
 .appt-body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 h4 {
   margin: 0 0 5px 0;
-  color: #7f8c8d;
+  color: #d90000;
   font-size: 0.9em;
-}
-
-p {
-  margin: 0;
-  color: #2c3e50;
+  text-transform: uppercase;
 }
 
 .sub-text {
-  font-size: 0.85em;
-  color: #95a5a6;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.dark-theme .sub-text {
+  color: #aaa;
 }
 
 .plate {
-  background: #ecf0f1;
+  display: inline-block;
+  background: #eee;
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.8em;
   font-weight: bold;
+  font-family: monospace;
+  border: 1px solid #ccc;
+}
+
+.dark-theme .plate {
+  background: #333;
+  border: 1px solid #555;
+  color: #fff;
 }
 
 .appt-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.dark-theme .appt-actions {
+  border-top: 1px solid #333;
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
 }
 
 .accept-btn {
   background-color: #2ecc71;
   color: white;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
 }
 
 .reject-btn {
   background-color: #e74c3c;
   color: white;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.no-data {
-  text-align: center;
-  color: #292e2e;
-  padding: 40px;
-}
-.dark-text {
-  color: #ecf0f1;
 }
 </style>
+
+
