@@ -164,18 +164,19 @@ export default {
           this.failedAttempts++
           this.$emit('login-failed')
 
-          if (this.failedAttempts >= 3) {
-            // Emitir evento de cuenta bloqueada después de 3 intentos
+          if (this.failedAttempts >= 5) {
+            // Emitir evento de cuenta bloqueada después de 5 intentos
             this.$emit('account-blocked')
             this.showModalMessage(
               'Cuenta Bloqueada',
               'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.',
               'error',
             )
+            console.log('Se me bloqueo la cuenta')
           } else {
             this.showModalMessage(
               'Error',
-              `Credenciales incorrectas (Intento ${this.failedAttempts}/3)`,
+              `Credenciales incorrectas (Intento ${this.failedAttempts}/5)`,
               'error',
             )
           }
@@ -191,12 +192,14 @@ export default {
           error.response?.data?.message?.includes('bloqueada')
         ) {
           this.$emit('account-blocked')
+          //Aca pondre el metodo para bloquear la cuenta
+
           this.showModalMessage(
             'Cuenta Bloqueada',
             'Tu cuenta está bloqueada. Por favor, utiliza la opción de recuperar cuenta.',
             'error',
           )
-        } else if (this.failedAttempts >= 3) {
+        } else if (this.failedAttempts >= 5) {
           this.$emit('account-blocked')
           this.showModalMessage(
             'Cuenta Bloqueada',
@@ -206,7 +209,7 @@ export default {
         } else {
           this.showModalMessage(
             'Error',
-            `Credenciales incorrectas (Intento ${this.failedAttempts}/3)`,
+            `Credenciales incorrectas (Intento ${this.failedAttempts}/5)`,
             'error',
           )
         }

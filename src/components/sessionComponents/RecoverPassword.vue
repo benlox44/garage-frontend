@@ -37,6 +37,19 @@
 
 <script>
 import Modal from '@/components/shared/Modal.vue'
+import api from '@/services/garage-back-api'
+
+const lostPassword = async (email) => {
+  try {
+    console.log('Lalamando a la API para recuperar contraseña con email:', email)
+    const response = await api.requestPasswordReset(email)
+    console.log('Respuesta del servidor:', response)
+    return response
+  } catch (error) {
+    console.error('Error en la API:', error)
+    throw error
+  }
+}
 
 export default {
   components: {
@@ -81,6 +94,7 @@ export default {
         email: this.email,
       }
       //comprobar con backend
+      lostPassword(this.email)
 
       try {
         this.showModalMessage(

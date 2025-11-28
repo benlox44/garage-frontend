@@ -20,7 +20,7 @@ const editForm = ref({
 })
 
 const passwordForm = ref({
-  oldPassword: '',
+  currentPassword: '',
   newPassword: '',
   confirmPassword: '',
 })
@@ -75,13 +75,13 @@ const changePassword = async () => {
   }
 
   const success = await api.updatePassword({
-    oldPassword: passwordForm.value.oldPassword,
+    currentPassword: passwordForm.value.currentPassword,
     newPassword: passwordForm.value.newPassword,
   })
 
   if (success) {
     showPasswordForm.value = false
-    passwordForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' }
+    passwordForm.value = { currentPassword: '', newPassword: '', confirmPassword: '' }
     showModalMessage('Éxito', 'Contraseña actualizada correctamente', 'success')
   } else {
     showModalMessage(
@@ -193,7 +193,7 @@ onMounted(() => {
           <div v-if="showPasswordForm" class="password-form">
             <div class="form-group">
               <label>Contraseña Actual</label>
-              <input v-model="passwordForm.oldPassword" type="password" class="letra-forms" />
+              <input v-model="passwordForm.currentPassword" type="password" class="letra-forms" />
             </div>
             <div class="form-group">
               <label>Nueva Contraseña</label>

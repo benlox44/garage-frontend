@@ -10,7 +10,7 @@ interface Appointment {
   date: string
   time: string
   status: string
-  serviceType: string
+  description: string
   client: {
     name: string
     email: string
@@ -44,13 +44,13 @@ const confirmAccept = (appt: Appointment) => {
     type: 'info',
     showCancel: true,
     action: async () => {
-      const success = await api.acceptAppointment(appt.id)
-      if (success) {
-        await loadAppointments()
-        showModal.value = false
-      } else {
-        // Handle error
-      }
+      // const success = await api.acceptAppointment(appt.id)
+      // if (success) {
+      //   await loadAppointments()
+      //   showModal.value = false
+      // } else {
+      //   // Handle error
+      // }
     },
   }
   showModal.value = true
@@ -58,8 +58,8 @@ const confirmAccept = (appt: Appointment) => {
 
 const confirmReject = (appt: Appointment) => {
   // For simplicity, using a prompt for reason, ideally a custom modal with input
-  const reason = prompt('Ingrese motivo de rechazo:')
-  if (!reason) return
+  const rejectionReason = prompt('Ingrese motivo de rechazo:')
+  if (!rejectionReason) return
 
   modalConfig.value = {
     title: 'Rechazar Cita',
@@ -67,7 +67,7 @@ const confirmReject = (appt: Appointment) => {
     type: 'warning',
     showCancel: true,
     action: async () => {
-      const success = await api.rejectAppointment(appt.id, reason)
+      const success = await api.rejectAppointment(appt.id, rejectionReason)
       if (success) {
         await loadAppointments()
         showModal.value = false
@@ -85,6 +85,22 @@ const handleConfirm = () => {
   }
 }
 
+const formatStatus = (status: string) => {
+  switch (status) {
+    case 'PENDING':
+    case 'pending':
+      return 'Pendiente'
+    case 'ACCEPTED':
+    case 'accepted':
+      return 'Aceptada'
+    case 'REJECTED':
+    case 'rejected':
+      return 'Rechazada'
+    default:
+      return status
+  }
+}
+
 onMounted(() => {
   loadAppointments()
 })
@@ -95,14 +111,20 @@ onMounted(() => {
     <h2 class="section-title">Gestión de Citas</h2>
 
     <div class="appointments-list">
-      <div v-if="appointments.length === 0" class="no-data">
-        No hay citas pendientes.
-      </div>
+      <div v-if="appointments.length === 0" class="no-data">No hay citas pendientes.</div>
 
       <div v-for="appt in appointments" :key="appt.id" class="appt-card">
         <div class="appt-header">
-          <span class="date">{{ new Date(appt.date).toLocaleDateString() }} - {{ appt.time }}</span>
-          <span class="status" :class="appt.status.toLowerCase()">{{ appt.status }}</span>
+          <v-row align="center" justify="space-between">
+            <v-col cols="auto" md="auto">
+              <span class="date">{{ new Date(appt.date).toLocaleDateString() }}</span>
+            </v-col>
+            <v-col cols="2" md="2">
+              <span class="status" :class="appt.status.toLowerCase()">
+                {{ formatStatus(appt.status) }}
+              </span>
+            </v-col>
+          </v-row>
         </div>
 
         <div class="appt-body">
@@ -118,11 +140,11 @@ onMounted(() => {
           </div>
           <div class="service-info">
             <h4>Servicio</h4>
-            <p>{{ appt.serviceType }}</p>
+            <p>{{ appt.description }}</p>
           </div>
         </div>
 
-        <div class="appt-actions" v-if="appt.status === 'PENDING'">
+        <div class="appt-actions" v-if="appt.status === 'pending'">
           <button @click="confirmReject(appt)" class="reject-btn">Rechazar</button>
           <button @click="confirmAccept(appt)" class="accept-btn">Aceptar</button>
         </div>
@@ -142,6 +164,9 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.status-select {
+  max-width: 150px;
+}
 .mechanic-appointments {
   padding: 20px;
   max-width: 900px;
@@ -149,7 +174,9 @@ onMounted(() => {
   min-height: 100vh;
   background-color: #ffffff;
   color: #000000;
-  transition: background-color 0.3s, color 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 
 .mechanic-appointments.dark-theme {
@@ -180,13 +207,13 @@ onMounted(() => {
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dark-theme .appt-card {
   background: #1a1a1a;
   border: 1px solid #333;
-  box-shadow: 0 2px 4px rgba(255,255,255,0.05);
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
 }
 
 .appt-header {
@@ -215,9 +242,18 @@ onMounted(() => {
   text-transform: uppercase;
 }
 
-.status.pending { background-color: #f1c40f; color: #000; }
-.status.accepted { background-color: #2ecc71; color: #fff; }
-.status.rejected { background-color: #e74c3c; color: #fff; }
+.status.pending {
+  background-color: #f1c40f;
+  color: #000;
+}
+.status.accepted {
+  background-color: #2ecc71;
+  color: #fff;
+}
+.status.rejected {
+  background-color: #e74c3c;
+  color: #fff;
+}
 
 .appt-body {
   display: grid;
@@ -293,5 +329,3 @@ button:hover {
   color: white;
 }
 </style>
-
-

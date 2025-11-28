@@ -1,3 +1,4 @@
+import type { NewItem } from '@/views/viewMechanic/MechanicOrders.vue'
 import axios from 'axios'
 
 const http = axios.create({
@@ -22,6 +23,18 @@ const api = {
     } catch (error) {
       console.error('Error en el registro:', error)
       return false
+    }
+  },
+  async confirmEmail(token: string) {
+    try {
+      const response = await http.get('/auth/confirm-email', {
+        params: { token }, // token va en query
+      })
+      console.log('Cuenta confirmada:', response.data)
+      return response.data
+    } catch (error) {
+      console.error('Error al confirmar la cuenta:', error)
+      throw error
     }
   },
   async login(email: string, password: string) {
@@ -60,6 +73,33 @@ const api = {
       return true
     } catch (error) {
       console.error('Error al recuperar cuenta:', error)
+      return false
+    }
+  },
+  async unlockAccount(token: string) {
+    try {
+      const response = await http.get('/auth/unlock-account', {
+        params: { token }, // token va en query
+      })
+      console.log('Cuenta desbloqueada:', response.data)
+      return response.data
+    } catch (error) {
+      console.error('Error al desbloquear la cuenta:', error)
+      throw error
+    }
+  },
+  requestPasswordReset(email: string) {
+    return http.post('/auth/request-password-reset', { email })
+  },
+  async resetPassword(token: string, newPassword: string) {
+    try {
+      const response = await http.post(`/auth/reset-password?token=${token}`, {
+        newPassword,
+      })
+      console.log('Respuesta de restablecimiento de contraseña:', response.data)
+      return true
+    } catch (error) {
+      console.error('Error al restablecer la contraseña:', error)
       return false
     }
   },
@@ -110,7 +150,7 @@ const api = {
     }
   },
 
-  async updatePassword(data: { oldPassword: string; newPassword: string }) {
+  async updatePassword(data: { currentPassword: string; newPassword: string }) {
     try {
       await http.patch('/users/me/password', data)
       return true
@@ -181,9 +221,11 @@ const api = {
     }
   },
 
-  async updateWorkOrder(id: number, data: any) {
+  async updateWorkOrder(id: number, data: string) {
     try {
-      const response = await http.patch(`/work-orders/${id}`, data)
+      const response = await http.patch(`/work-orders/${id}`, {
+        status: data,
+      })
       return response.data
     } catch (error) {
       console.error('Error al actualizar orden de trabajo:', error)
@@ -191,7 +233,7 @@ const api = {
     }
   },
 
-  async addWorkOrderItems(id: number, data: any) {
+  async addWorkOrderItems(id: number, data: { items: NewItem[] }) {
     try {
       const response = await http.post(`/work-orders/${id}/items`, data)
       return response.data
@@ -232,9 +274,9 @@ const api = {
     }
   },
 
-  async rejectAppointment(id: number, reason: string) {
+  async rejectAppointment(id: number, rejectionReason: string) {
     try {
-      await http.patch(`/appointments/${id}/reject`, { reason })
+      await http.patch(`/appointments/${id}/reject`, { rejectionReason })
       return true
     } catch (error) {
       console.error('Error al rechazar cita:', error)
@@ -374,7 +416,13 @@ const api = {
   },
 
   // ===== VEHICLES METHODS =====
-  async createVehicle(data: { brand: string; model: string; year: number; licensePlate: string; color: string }) {
+  async createVehicle(data: {
+    brand: string
+    model: string
+    year: number
+    licensePlate: string
+    color: string
+  }) {
     try {
       const response = await http.post('/users/me/vehicles', data)
       return { success: true, message: response.data.message }

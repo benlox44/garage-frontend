@@ -7,8 +7,10 @@ const { isDark } = useTheme()
 
 interface WorkOrderItem {
   id: number
-  description: string
-  cost: number
+  name: string
+  type: string
+  quantity: number
+  unitPrice: number
   isApproved: boolean
 }
 
@@ -40,8 +42,10 @@ const vehicleHistory = ref<WorkOrder[]>([])
 const showHistory = ref(false)
 
 const newItemForm = ref({
-  description: '',
-  cost: 0,
+  name: '',
+  type: '',
+  quantity: 0,
+  unitPrice: 0,
 })
 
 const modalConfig = ref({
@@ -52,9 +56,42 @@ const modalConfig = ref({
   action: null as (() => void) | null,
 })
 
+const normalizeStatus = (status: string) => {
+  switch (status) {
+    case 'pending_approval':
+      return 'PENDIENTE'
+    case 'in_progress':
+      return 'EN PROGRESO'
+    case 'completed':
+      return 'COMPLETADO'
+    case 'cancelled':
+      return 'CANCELADO'
+    default:
+      return status
+  }
+}
+
+const normalizerTypeItems = (type: string) => {
+  switch (type) {
+    case 'spare_part':
+      return 'Repuesto'
+    case 'tool':
+      return 'Herramienta'
+    case 'service':
+      return 'Servicio'
+    default:
+      return type
+  }
+}
+
 const loadOrders = async () => {
   const data = await api.getMechanicWorkOrders()
-  orders.value = (data as WorkOrder[]).sort((a, b) => a.id - b.id) // 👈 ORDENADO DE MAYOR A MENOR
+  orders.value = (data as WorkOrder[])
+    .map((order) => ({
+      ...order,
+      status: normalizeStatus(order.status),
+    }))
+    .sort((a, b) => a.id - b.id)
 }
 
 const searchHistory = async () => {
@@ -118,11 +155,21 @@ const viewDetails = (order: WorkOrder) => {
 const closeDetails = () => {
   selectedOrder.value = null
 }
-
+//pending_approval, in_progress, completed, cancelled
 const updateStatus = async (status: string) => {
   if (!selectedOrder.value) return
+  // 🟢 MAPA DE TRADUCCIÓN FRONT → BACK
+  const toBackendStatus = (status: string) => {
+    if (status === 'COMPLETADO') return 'completed'
+    if (status === 'EN PROGRESO') return 'in_progress'
+    if (status === 'PENDIENTE') return 'pending_approval'
+    if (status === 'CANCELADO') return 'cancelled'
+    return status // fallback
+  }
 
-  const result = await api.updateWorkOrder(selectedOrder.value.id, { status })
+  const backendStatus = toBackendStatus(status)
+
+  const result = await api.updateWorkOrder(selectedOrder.value.id, backendStatus)
   if (result) {
     selectedOrder.value.status = status
     // Update in list as well
@@ -132,9 +179,21 @@ const updateStatus = async (status: string) => {
   }
 }
 
+export interface NewItem {
+  name: string
+  type: string
+  quantity: number
+  unitPrice: number
+}
 const addItem = async () => {
+  console.log('Agregando ítem:', newItemForm.value) // debug
   if (!selectedOrder.value) return
-  if (!newItemForm.value.description || newItemForm.value.cost <= 0) {
+  if (
+    !newItemForm.value.name ||
+    !newItemForm.value.type ||
+    newItemForm.value.unitPrice <= 0 ||
+    newItemForm.value.quantity <= 0
+  ) {
     showModalMessage('Error', 'Datos inválidos', 'error')
     return
   }
@@ -142,8 +201,10 @@ const addItem = async () => {
   const result = await api.addWorkOrderItems(selectedOrder.value.id, {
     items: [
       {
-        description: newItemForm.value.description,
-        cost: newItemForm.value.cost,
+        name: newItemForm.value.name,
+        type: newItemForm.value.type,
+        quantity: newItemForm.value.quantity,
+        unitPrice: newItemForm.value.unitPrice,
       },
     ],
   })
@@ -157,7 +218,7 @@ const addItem = async () => {
       const idx = orders.value.findIndex((o) => o.id === selectedOrder.value!.id)
       if (idx !== -1) orders.value[idx] = updatedOrder.data
     }
-    newItemForm.value = { description: '', cost: 0 }
+    newItemForm.value = { name: '', type: '', quantity: 0, unitPrice: 0 }
     showModalMessage('Éxito', 'Ítem agregado', 'success')
   }
 }
@@ -187,17 +248,32 @@ const handleConfirm = () => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'PENDING':
+    case 'PENDIENTE':
       return '#f1c40f'
-    case 'IN_PROGRESS':
+    case 'EN PROGRESO':
       return '#3498db'
-    case 'COMPLETED':
+    case 'COMPLETADO':
       return '#2ecc71'
-    case 'CANCELLED':
+    case 'CANCELADO':
       return '#e74c3c'
     default:
       return '#95a5a6'
   }
+}
+const formatCurrency = (value: number | string | null | undefined) => {
+  // Normalizar valores inválidos
+  if (value === null || value === undefined || value === '') return ''
+
+  // Convertir a número seguro
+  const n = typeof value === 'number' ? value : Number(String(value).replace(/\s/g, ''))
+
+  if (Number.isNaN(n)) return ''
+
+  // Formatear sin decimales y con separador de miles (es-CL)
+  return Math.round(n).toLocaleString('es-CL', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
 }
 
 onMounted(() => {
@@ -263,25 +339,27 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
+    <!-- Orders List / Desde aqui mira que hay -->
     <div v-if="!selectedOrder" class="orders-list">
       <div v-if="orders.length === 0" class="no-orders">No hay órdenes de trabajo.</div>
 
       <div v-for="order in orders" :key="order.id" class="order-card" @click="viewDetails(order)">
-        <div class="order-header">
-          <span class="order-id">#{{ order.id }}</span>
-          <br />
-          <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
-        </div>
-        <div class="order-vehicle">
-          <h3>{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
-          <span class="plate">{{ order.vehicle.licensePlate }}</span>
-        </div>
-        <div class="order-status">
-          <span class="status-badge" :style="{ backgroundColor: getStatusColor(order.status) }">
-            {{ order.status }}
-          </span>
-        </div>
+        <v-row>
+          <v-col cols="12" md="4" class="text-center md:text-left">
+            <span class="order-id">#{{ order.id }}</span>
+            <br />
+            <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
+          </v-col>
+          <v-col cols="12" md="4" class="text-center md:text-left">
+            <h3>{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
+            <span class="plate">{{ order.vehicle.licensePlate }}</span>
+          </v-col>
+          <v-col cols="12" md="4" class="text-center md:text-left">
+            <span class="status-badge" :style="{ backgroundColor: getStatusColor(order.status) }">
+              {{ order.status }}
+            </span>
+          </v-col>
+        </v-row>
       </div>
     </div>
 
@@ -298,10 +376,10 @@ onMounted(() => {
             <div class="status-actions">
               <v-select
                 :items="[
-                  { title: 'Pendiente', value: 'PENDING' },
-                  { title: 'En Progreso', value: 'IN_PROGRESS' },
-                  { title: 'Completada', value: 'COMPLETED' },
-                  { title: 'Cancelada', value: 'CANCELLED' },
+                  { title: 'Pendiente', value: 'PENDIENTE' },
+                  { title: 'En Progreso', value: 'EN PROGRESO' },
+                  { title: 'Completada', value: 'COMPLETADO' },
+                  { title: 'Cancelada', value: 'CANCELADO' },
                 ]"
                 v-model="selectedOrder.status"
                 @update:model-value="updateStatus"
@@ -324,26 +402,89 @@ onMounted(() => {
           <h3>Ítems y Servicios</h3>
 
           <div class="add-item-form">
-            <input v-model="newItemForm.description" placeholder="Descripción" class="input-desc" />
-            <input
-              v-model.number="newItemForm.cost"
-              type="number"
-              placeholder="Costo"
-              class="input-cost"
-            />
-            <button @click="addItem" class="add-btn">Agregar</button>
+            <v-row>
+              <!-- Nombre -->
+              <v-col cols="3">
+                <v-text-field
+                  v-model="newItemForm.name"
+                  label="Nombre"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+              </v-col>
+
+              <!-- Tipo -->
+              <v-col cols="3">
+                <v-select
+                  v-model="newItemForm.type"
+                  :items="[
+                    { label: 'Repuesto', value: 'spare_part' },
+                    { label: 'Herramienta', value: 'tool' },
+                    { label: 'Servicio', value: 'service' },
+                  ]"
+                  item-title="label"
+                  item-value="value"
+                  label="Tipo"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+              </v-col>
+
+              <!-- Cantidad -->
+              <v-col cols="2">
+                <v-text-field
+                  v-model.number="newItemForm.quantity"
+                  label="Cantidad"
+                  type="number"
+                  min="1"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+              </v-col>
+
+              <!-- Precio unitario -->
+              <v-col cols="2">
+                <v-text-field
+                  v-model.number="newItemForm.unitPrice"
+                  label="Precio Unitario"
+                  type="number"
+                  min="0"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+              </v-col>
+
+              <!-- Botón -->
+              <v-col cols="2" class="d-flex align-center">
+                <v-btn color="primary" @click="addItem" block> Agregar </v-btn>
+              </v-col>
+            </v-row>
           </div>
 
           <div class="items-list">
             <div v-for="item in selectedOrder.items" :key="item.id" class="item-row">
-              <div class="item-info">
-                <span class="item-desc">{{ item.description }}</span>
-                <span class="item-cost">${{ item.cost }}</span>
-              </div>
-              <div class="item-status">
-                <span v-if="item.isApproved" class="approved">Aprobado</span>
-                <span v-else class="pending">Pendiente Aprobación</span>
-              </div>
+              <v-row>
+                <v-col cols="12" md="3">
+                  <span class="item-desc">{{ item.name }}</span>
+                </v-col>
+                <v-col cols="12" md="3">
+                  <span class="item-desc"
+                    >Tipo: {{ normalizerTypeItems(item.type) }} - Cantidad:
+                    {{ item.quantity }}</span
+                  >
+                </v-col>
+                <v-col cols="12" md="3">
+                  <span class="item-cost">$ {{ formatCurrency(item.unitPrice) }}</span>
+                </v-col>
+                <v-col cols="12" md="3">
+                  <span v-if="item.isApproved" class="approved">Aprobado</span>
+                  <span v-else class="pending">Pendiente Aprobación</span>
+                </v-col>
+              </v-row>
             </div>
           </div>
         </div>
@@ -459,9 +600,6 @@ onMounted(() => {
   align-items: center;
   gap: 5px;
   font-weight: bold;
-}
-
-.orders-list {
 }
 
 .order-card {
