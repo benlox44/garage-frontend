@@ -44,13 +44,13 @@ const confirmAccept = (appt: Appointment) => {
     type: 'info',
     showCancel: true,
     action: async () => {
-      // const success = await api.acceptAppointment(appt.id)
-      // if (success) {
-      //   await loadAppointments()
-      //   showModal.value = false
-      // } else {
-      //   // Handle error
-      // }
+      const success = await api.acceptAppointment(appt.id)
+      if (success) {
+        await loadAppointments()
+        showModal.value = false
+      } else {
+        // Handle error
+      }
     },
   }
   showModal.value = true

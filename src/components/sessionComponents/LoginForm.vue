@@ -17,7 +17,9 @@
         <v-col md="12" cols="12">
           <v-text-field
             v-model="password"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
+            :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+            @click:append-inner="showPassword = !showPassword"
             :rules="passwordRules"
             label="Password"
             variant="solo"
@@ -82,7 +84,9 @@ export default {
           return 'E-mail must be valid.'
         },
       ],
+
       password: '',
+      showPassword: false, // 👈 AQUI SE AGREGA
       passwordRules: [
         (value) => {
           if (value) return true
@@ -95,6 +99,7 @@ export default {
           return 'Password must be at least 8 characters.'
         },
       ],
+
       checkbox: false,
       loading: false,
       failedAttempts: 0,
@@ -132,22 +137,21 @@ export default {
       if (!isValid.valid) {
         return
       }
-      this.loading = true // inicia spinner
-      //Llamada a axios para iniciar sesión
+      this.loading = true
+
       const formData = {
         email: this.email,
         password: this.password,
       }
-      //comprobar con backend
 
       try {
         const result = await api.login(formData.email, formData.password)
         if (result.success) {
-          // Redirigir a la vista de usuario (ruta definida en tu router)
           const userData = await api.perfil()
           localStorage.setItem('userEmail', userData.email)
           localStorage.setItem('userName', userData.name)
           localStorage.setItem('userRol', userData.rol)
+
           if (userData.rol == 'ADMIN') {
             this.$router.push('/admin')
           } else if (userData.rol == 'CLIENT') {
@@ -165,14 +169,12 @@ export default {
           this.$emit('login-failed')
 
           if (this.failedAttempts >= 5) {
-            // Emitir evento de cuenta bloqueada después de 5 intentos
             this.$emit('account-blocked')
             this.showModalMessage(
               'Cuenta Bloqueada',
               'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.',
               'error',
             )
-            console.log('Se me bloqueo la cuenta')
           } else {
             this.showModalMessage(
               'Error',
@@ -186,14 +188,11 @@ export default {
         this.failedAttempts++
         this.$emit('login-failed')
 
-        // Verificar si el error indica cuenta bloqueada
         if (
           error.response?.status === 423 ||
           error.response?.data?.message?.includes('bloqueada')
         ) {
           this.$emit('account-blocked')
-          //Aca pondre el metodo para bloquear la cuenta
-
           this.showModalMessage(
             'Cuenta Bloqueada',
             'Tu cuenta está bloqueada. Por favor, utiliza la opción de recuperar cuenta.',
@@ -214,7 +213,7 @@ export default {
           )
         }
       } finally {
-        this.loading = false // ✅ detener spinner ocurra lo que ocurra
+        this.loading = false
       }
     },
   },

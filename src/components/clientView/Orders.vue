@@ -5,9 +5,12 @@ import Modal from '@/components/shared/Modal.vue'
 import { useTheme } from '@/composables/useTheme'
 interface WorkOrderItem {
   id: number
-  description: string
-  cost: number
+  name: string
+  type: string
+  quantity: number
+  unitPrice: number
   isApproved: boolean
+  requiresApproval: boolean
 }
 
 interface WorkOrder {
@@ -50,7 +53,7 @@ const closeDetails = () => {
 const approveItem = async (item: WorkOrderItem) => {
   modalConfig.value = {
     title: 'Aprobar Ítem',
-    message: `¿Estás seguro de aprobar "${item.description}" por $${item.cost}?`,
+    message: `¿Estás seguro de aprobar "${item.name}" por $${item.unitPrice}?`,
     type: 'warning',
     showCancel: true,
     action: async () => {
@@ -83,13 +86,13 @@ const handleConfirm = () => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'PENDING':
+    case 'pending_approval':
       return '#f1c40f'
-    case 'IN_PROGRESS':
+    case 'in_progress':
       return '#3498db'
-    case 'COMPLETED':
+    case 'completed':
       return '#2ecc71'
-    case 'CANCELLED':
+    case 'cancelled':
       return '#e74c3c'
     default:
       return '#95a5a6'
@@ -98,17 +101,54 @@ const getStatusColor = (status: string) => {
 
 const getStatusText = (status: string) => {
   switch (status) {
-    case 'PENDING':
+    case 'pending_approval':
       return 'Pendiente'
-    case 'IN_PROGRESS':
+    case 'in_progress':
       return 'En Progreso'
-    case 'COMPLETED':
+    case 'completed':
       return 'Completada'
-    case 'CANCELLED':
+    case 'cancelled':
       return 'Cancelada'
     default:
       return status
   }
+}
+const normalizerTypeItems = (type: string) => {
+  switch (type) {
+    case 'spare_part':
+      return 'Repuesto'
+    case 'tool':
+      return 'Herramienta'
+    case 'service':
+      return 'Servicio'
+    default:
+      return type
+  }
+}
+const normalizerApprovedItems = (approved: boolean) => {
+  if (approved === false) return 'Por aprobar'
+  if (approved === true) return 'Aprobado'
+  return 'Desconocido'
+}
+const formatCurrency = (value: number | string | null | undefined) => {
+  // Normalizar valores inválidos
+  if (value === null || value === undefined || value === '') return ''
+
+  // Convertir a número seguro
+  const n = typeof value === 'number' ? value : Number(String(value).replace(/\s/g, ''))
+
+  if (Number.isNaN(n)) return ''
+
+  // Formatear sin decimales y con separador de miles (es-CL)
+  return Math.round(n).toLocaleString('es-CL', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+}
+const getApprovedColor = (approved: boolean) => {
+  if (approved === true) return isDark.value ? '#4ade80' : '#27ae60' // Verde
+  if (approved === false) return isDark.value ? '#facc15' : '#f1c40f' // Amarillo
+  return isDark.value ? '#9ca3af' : '#7f8c8d' // Gris fallback
 }
 
 onMounted(() => {
@@ -135,43 +175,47 @@ onMounted(() => {
           backgroundColor: isDark ? '#0b0b0b' : '#ffffff',
           color: isDark ? '#ffffff' : '#111827',
           border: isDark ? '1px solid rgba(217,0,0,0.12)' : '1px solid rgba(217,0,0,0.08)',
-          boxShadow: isDark ? '0 2px 6px rgba(0,0,0,0.6)' : '0 2px 5px rgba(0,0,0,0.05)'
+          boxShadow: isDark ? '0 2px 6px rgba(0,0,0,0.6)' : '0 2px 5px rgba(0,0,0,0.05)',
         }"
       >
         <div class="order-header" :style="{ color: isDark ? 'rgba(255,255,255,0.85)' : '#6b7280' }">
           <span class="order-id" :style="{ fontWeight: 700 }">#{{ order.id }}</span>
-          <span class="order-date" :style="{ fontSize: '0.9em' }">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
+          <span class="order-date" :style="{ fontSize: '0.9em' }">{{
+            new Date(order.createdAt).toLocaleDateString()
+          }}</span>
         </div>
 
         <div class="order-vehicle">
-          <h3 :style="{ margin: 0, color: isDark ? '#ffdede' : '#1f2937' }">{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
+          <h3 :style="{ margin: 0, color: isDark ? '#ffdede' : '#1f2937' }">
+            {{ order.vehicle.brand }} {{ order.vehicle.model }}
+          </h3>
           <span
-        class="plate"
-        :style="{
-          background: isDark ? 'rgba(217,0,0,0.12)' : '#fff',
-          color: isDark ? '#ffdede' : '#d90000',
-          border: isDark ? '1px solid rgba(217,0,0,0.22)' : '1px solid rgba(217,0,0,0.15)',
-          padding: '2px 6px',
-          borderRadius: '4px',
-          fontSize: '0.85em',
-          fontWeight: '700'
-        }"
+            class="plate"
+            :style="{
+              background: isDark ? 'rgba(217,0,0,0.12)' : '#fff',
+              color: isDark ? '#ffdede' : '#d90000',
+              border: isDark ? '1px solid rgba(217,0,0,0.22)' : '1px solid rgba(217,0,0,0.15)',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '0.85em',
+              fontWeight: '700',
+            }"
           >
-        {{ order.vehicle.licensePlate || 'Sin patente' }}
+            {{ order.vehicle.licensePlate || 'Sin patente' }}
           </span>
         </div>
 
         <div class="order-status">
           <span
-        class="status-badge"
-        :style="{
-          backgroundColor: getStatusColor(order.status),
-          color: '#ffffff',
-          border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)',
-          boxShadow: isDark ? '0 1px 0 rgba(0,0,0,0.4) inset' : 'none'
-        }"
+            class="status-badge"
+            :style="{
+              backgroundColor: getStatusColor(order.status),
+              color: '#ffffff',
+              border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)',
+              boxShadow: isDark ? '0 1px 0 rgba(0,0,0,0.4) inset' : 'none',
+            }"
           >
-        {{ getStatusText(order.status) }}
+            {{ getStatusText(order.status) }}
           </span>
         </div>
       </div>
@@ -182,70 +226,166 @@ onMounted(() => {
         <v-icon>mdi-arrow-left</v-icon> Volver
       </button>
 
-      <div class="details-card" :class="{ 'dark-card': isDark }" :style="{
-        backgroundColor: isDark ? '#0b0b0b' : '#ffffff',
-        color: isDark ? '#ffffff' : '#111827',
-        border: isDark ? '1px solid rgba(217,0,0,0.22)' : '1px solid rgba(217,0,0,0.10)'
-      }">
-        <div class="details-header" :style="{ borderBottomColor: isDark ? 'rgba(217,0,0,0.18)' : '#eee' }">
+      <div
+        class="details-card"
+        :class="{ 'dark-card': isDark }"
+        :style="{
+          backgroundColor: isDark ? '#0b0b0b' : '#ffffff',
+          color: isDark ? '#ffffff' : '#111827',
+          border: isDark ? '1px solid rgba(217,0,0,0.22)' : '1px solid rgba(217,0,0,0.10)',
+        }"
+      >
+        <div
+          class="details-header"
+          :style="{ borderBottomColor: isDark ? 'rgba(217,0,0,0.18)' : '#eee' }"
+        >
           <h2 :style="{ color: isDark ? '#ffffff' : '#111827' }">Orden #{{ selectedOrder.id }}</h2>
-          <span class="status-badge" :style="{
-        backgroundColor: getStatusColor(selectedOrder.status),
-        color: '#ffffff',
-        border: isDark ? '1px solid rgba(217,0,0,0.30)' : '1px solid rgba(217,0,0,0.08)'
-          }">
-        {{ getStatusText(selectedOrder.status) }}
+          <span
+            class="status-badge"
+            :style="{
+              backgroundColor: getStatusColor(selectedOrder.status),
+              color: '#ffffff',
+              border: isDark ? '1px solid rgba(217,0,0,0.30)' : '1px solid rgba(217,0,0,0.08)',
+            }"
+          >
+            {{ getStatusText(selectedOrder.status) }}
           </span>
         </div>
 
-        <div class="vehicle-info" :style="{ marginBottom: '12px' }">
-          <h3 :style="{ color: isDark ? '#ffdede' : '#111827' }">Vehículo</h3>
-          <p :style="{ color: isDark ? '#ffdede' : '#4b5563' }">
-        {{ selectedOrder.vehicle.brand }} {{ selectedOrder.vehicle.model }} -
-        <span
-          :style="{ background: isDark ? 'rgba(217,0,0,0.12)' : '#fff', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', color: isDark ? '#ffdede' : '#d90000', border: isDark ? '1px solid rgba(217,0,0,0.22)' : '1px solid rgba(217,0,0,0.12)' }">
-          {{ selectedOrder.vehicle.licensePlate || 'Sin patente' }}
-        </span>
-          </p>
+        <div>
+          <v-row class="info-order">
+            <v-col cols="12">
+              <h3 :style="{ color: isDark ? '#ffdede' : '#111827' }">Vehículo</h3>
+
+              <p :style="{ color: isDark ? '#ffdede' : '#4b5563' }">
+                {{ selectedOrder.vehicle.brand }}
+                {{ selectedOrder.vehicle.model }}
+                -
+                <span
+                  :style="{
+                    background: isDark ? 'rgba(217,0,0,0.12)' : '#fff',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontWeight: '700',
+                    color: isDark ? '#ffdede' : '#d90000',
+                    border: isDark
+                      ? '1px solid rgba(217,0,0,0.22)'
+                      : '1px solid rgba(217,0,0,0.12)',
+                  }"
+                >
+                  {{ selectedOrder.vehicle.licensePlate || 'Sin patente' }}
+                </span>
+              </p>
+            </v-col>
+          </v-row>
+          <hr style="margin-bottom: 20px" />
         </div>
 
         <div class="items-list">
           <h3 :style="{ color: isDark ? '#ffdede' : '#111827' }">Ítems y Servicios</h3>
-          <div v-if="selectedOrder.items.length === 0" class="no-items"
-        :style="{ color: isDark ? '#9fb2cc' : '#7f8c8d' }">
-        No hay ítems registrados.
+          <div
+            v-if="selectedOrder.items.length === 0"
+            class="no-items"
+            :style="{ color: isDark ? '#9fb2cc' : '#7f8c8d' }"
+          >
+            No hay ítems registrados.
           </div>
-          <div v-for="item in selectedOrder.items" :key="item.id" class="item-row" :style="{
-        borderBottomColor: isDark ? 'rgba(217,0,0,0.06)' : '#f5f5f5'
-          }">
-        <div class="item-info">
-          <span class="item-desc" :style="{ color: isDark ? '#ffffff' : '#1f2937' }">{{ item.description }}</span>
-          <span class="item-cost" :style="{ color: isDark ? '#ffdede' : '#7f8c8d' }">${{ item.cost }}</span>
-        </div>
-        <div class="item-action">
-          <span v-if="item.isApproved" class="approved-badge" :style="{ color: isDark ? '#34d399' : '#27ae60' }">
-            <v-icon color="green" size="small">mdi-check-circle</v-icon> Aprobado
-          </span>
-          <button v-else class="approve-btn" @click.stop="approveItem(item)" :style="{
-            backgroundColor: isDark ? '#059669' : '#2ecc71',
-            color: 'white',
-            border: isDark ? '1px solid rgba(217,0,0,0.06)' : 'none',
-            boxShadow: isDark ? '0 1px 0 rgba(0,0,0,0.4) inset' : 'none'
-          }">
-            Aprobar
-          </button>
-        </div>
+          <div
+            v-for="item in selectedOrder.items"
+            :key="item.id"
+            class="item-row"
+            :style="{
+              borderBottomColor: isDark ? 'rgba(217,0,0,0.06)' : '#f5f5f5',
+            }"
+          >
+            <v-row>
+              <v-col cols="6" md="3">
+                <span class="item-desc" :style="{ color: isDark ? '#ffffff' : '#1f2937' }">{{
+                  item.name
+                }}</span>
+              </v-col>
+              <v-col cols="6" md="2">
+                <span class="item-type" :style="{ color: isDark ? '#9fb2cc' : '#7f8c8d' }">{{
+                  normalizerTypeItems(item.type)
+                }}</span>
+              </v-col>
+              <v-col cols="6" md="2">
+                <span class="item-cost" :style="{ color: isDark ? '#ffdede' : '#7f8c8d' }"
+                  >${{ formatCurrency(item.unitPrice) }}</span
+                >
+              </v-col>
+              <v-col cols="6" md="2">
+                <span
+                  class="item-quantity"
+                  :style="{
+                    fontWeight: '700',
+                    color: getApprovedColor(item.isApproved),
+                  }"
+                >
+                  {{ normalizerApprovedItems(item.isApproved) }}
+                </span>
+              </v-col>
+            </v-row>
+            <div class="item-action">
+              <span
+                v-if="item.isApproved"
+                class="approved-badge"
+                :style="{ color: isDark ? '#34d399' : '#27ae60' }"
+              >
+                <v-icon color="green" size="small">mdi-check-circle</v-icon> Aprobado
+              </span>
+              <button
+                v-if="!item.isApproved && item.requiresApproval"
+                class="approve-btn"
+                @click.stop="approveItem(item)"
+                :style="{
+                  backgroundColor: isDark ? '#059669' : '#2ecc71',
+                  color: 'white',
+                }"
+              >
+                Aprobar
+              </button>
+
+              <span
+                v-else-if="item.requiresApproval === false"
+                class="approved-badge"
+                :style="{ color: isDark ? '#9ca3af' : '#7f8c8d' }"
+              >
+                <v-icon size="small">mdi-information</v-icon>
+                No requiere aprobación
+              </span>
+
+              <span
+                v-else
+                class="approved-badge"
+                :style="{ color: isDark ? '#34d399' : '#27ae60' }"
+              >
+                <v-icon color="green" size="small">mdi-check-circle</v-icon>
+                Aprobado
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <Modal :show="showModal" :title="modalConfig.title" :message="modalConfig.message" :type="modalConfig.type"
-      :show-cancel="modalConfig.showCancel" @close="showModal = false" @confirm="handleConfirm" />
+    <Modal
+      :show="showModal"
+      :title="modalConfig.title"
+      :message="modalConfig.message"
+      :type="modalConfig.type"
+      :show-cancel="modalConfig.showCancel"
+      @close="showModal = false"
+      @confirm="handleConfirm"
+    />
   </div>
 </template>
 
 <style scoped>
+.info-order {
+  margin-bottom: 20px;
+  text-align: center;
+}
 .orders-container {
   padding: 20px;
   max-width: 800px;
