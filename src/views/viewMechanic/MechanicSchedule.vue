@@ -254,8 +254,10 @@ onMounted(() => {
   transition: background-color 0.3s, color 0.3s;
 }
 
+/*background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); /* Fondo oscuro */
 .mechanic-schedule.dark-theme {
-  background-color: #000000;
+  background: transparent !important;
+  background-color: transparent !important;
   color: #ffffff;
 }
 
