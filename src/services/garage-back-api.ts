@@ -71,8 +71,8 @@ const api = {
   // ===== USERS =====
   async getProfile() {
     try {
-      const response = await http.get<User>('/users/me')
-      return response.data
+      const response = await http.get<{ data: User }>('/users/me')
+      return response.data.data
     } catch (error) {
       return null
     }
@@ -84,7 +84,12 @@ const api = {
   },
 
   async updateProfile(data: { name?: string; phone?: string }) {
-    return http.patch('/users/me', data)
+    try {
+      await http.patch('/users/me', data)
+      return true
+    } catch (error) {
+      return false
+    }
   },
 
   async updatePassword(data: { currentPassword?: string; newPassword: string }) {
