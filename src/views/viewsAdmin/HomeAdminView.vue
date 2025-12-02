@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import headerAdmin from '@/components/adminView/headerAdminView.vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
@@ -14,6 +15,8 @@ interface User {
   isLocked: boolean
 }
 
+const route = useRoute()
+const router = useRouter()
 const currentSection = ref<'users' | 'profile'>('users')
 const users = ref<User[]>([])
 const loading = ref(false)
@@ -30,6 +33,22 @@ const mechanicForm = ref({
 })
 
 const roles = ['CLIENT', 'MECHANIC', 'ADMIN']
+
+// Watch for query param changes
+watch(
+  () => route.query.section,
+  (newSection) => {
+    if (newSection && ['users', 'profile'].includes(newSection as string)) {
+      currentSection.value = newSection as any
+    }
+  },
+  { immediate: true },
+)
+
+const handleNavigation = (section: 'users' | 'profile') => {
+  currentSection.value = section
+  router.replace({ query: { ...route.query, section } })
+}
 
 // Modal global
 const showModal = ref(false)
@@ -181,10 +200,6 @@ const getRoleLabel = (role: string) => {
     default:
       return role
   }
-}
-
-const handleNavigation = (section: 'users' | 'profile') => {
-  currentSection.value = section
 }
 
 onMounted(() => {

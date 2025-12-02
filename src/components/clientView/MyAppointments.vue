@@ -12,6 +12,7 @@
       <div
         v-for="appointment in appointments"
         :key="appointment.id"
+        :id="`appointment-${appointment.id}`"
         class="appointment-card"
         :class="getStatusClass(appointment.status)"
       >
@@ -21,11 +22,11 @@
 
         <div class="appointment-details">
           <p><strong>Fecha:</strong> {{ formatDate(appointment.date) }}</p>
-          <p><strong>Hora:</strong> {{ appointment.hour }}</p>
-          <p><strong>Mecánico:</strong> {{ appointment.mechanic.name }}</p>
+          <p><strong>Hora:</strong> {{ appointment.time || 'No especificada' }}</p>
+          <p><strong>Mecánico:</strong> {{ appointment.mechanic?.name || 'Asignando...' }}</p>
           <p>
-            <strong>Vehículo:</strong> {{ appointment.vehicle.licensePlate }} -
-            {{ appointment.vehicle.brand }}
+            <strong>Vehículo:</strong> {{ appointment.vehicle?.licensePlate }} -
+            {{ appointment.vehicle?.brand }}
           </p>
           <p><strong>Servicio:</strong> {{ appointment.description || 'No especificado' }}</p>
 
@@ -63,47 +64,42 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
-
-interface Mechanic {
-  id: number
-  name: string
-}
-
-interface Vehicle {
-  id: number
-  licensePlate: string
-  brand: string
-  model: string
-  year: number
-  color: string
-}
-
-interface Appointment {
-  id: number
-  date: string
-  hour: string
-  status: 'pending' | 'accepted' | 'rejected'
-  description?: string
-  rejectionReason?: string
-  mechanic: Mechanic
-  vehicle: Vehicle
-}
+import { useRoute } from 'vue-router'
+import type { Appointment } from '@/types/garage'
 
 const appointments = ref<Appointment[]>([])
 const loading = ref(true)
+const route = useRoute()
 let pollInterval: number | null = null
 
 onMounted(async () => {
   await loadAppointments()
+  checkDeepLink()
 
   // Polling cada 30 segundos para ver cambios de estado
   pollInterval = setInterval(async () => {
     await loadAppointments()
   }, 30000)
 })
+
+const checkDeepLink = async () => {
+  const id = route.query.appointmentId
+  if (id) {
+    await nextTick()
+    // Pequeño delay para asegurar renderizado
+    setTimeout(() => {
+      const element = document.getElementById(`appointment-${id}`)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        element.classList.add('highlighted')
+        setTimeout(() => element.classList.remove('highlighted'), 3000)
+      }
+    }, 500)
+  }
+}
 
 onUnmounted(() => {
   if (pollInterval) {
@@ -254,6 +250,18 @@ const formatDate = (date: string) => {
 .appointment-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.appointment-card.highlighted {
+  animation: highlight-pulse 2s ease-in-out;
+  border: 2px solid #2b7a78;
+  box-shadow: 0 0 15px rgba(43, 122, 120, 0.5);
+}
+
+@keyframes highlight-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
 }
 
 .appointment-card.status-pending {

@@ -145,8 +145,8 @@ const api = {
   // ===== VEHICLES =====
   async getMyVehicles() {
     try {
-      const response = await http.get<Vehicle[]>('/users/me/vehicles')
-      return response.data
+      const response = await http.get<{ data: Vehicle[] }>('/users/me/vehicles')
+      return response.data.data
     } catch (error) {
       return []
     }
@@ -179,11 +179,20 @@ const api = {
     }
   },
 
+  async searchVehicles(query: string) {
+    try {
+      const response = await http.get<{ data: Vehicle[] }>(`/vehicles/search?query=${query}`)
+      return response.data.data
+    } catch (error) {
+      return []
+    }
+  },
+
   // ===== WORK ORDERS =====
   async getClientWorkOrders() {
     try {
-      const response = await http.get<WorkOrder[]>('/work-orders/client')
-      return response.data
+      const response = await http.get<{ data: WorkOrder[] }>('/work-orders/client')
+      return response.data.data
     } catch (error) {
       return []
     }
@@ -191,8 +200,8 @@ const api = {
 
   async getMechanicWorkOrders() {
     try {
-      const response = await http.get<WorkOrder[]>('/work-orders/mechanic')
-      return response.data
+      const response = await http.get<{ data: WorkOrder[] }>('/work-orders/mechanic')
+      return response.data.data
     } catch (error) {
       return []
     }
@@ -209,8 +218,8 @@ const api = {
 
   async getWorkOrderById(id: number) {
     try {
-      const response = await http.get(`/work-orders/${id}`)
-      return response.data
+      const response = await http.get<{ data: WorkOrder }>(`/work-orders/${id}`)
+      return response.data.data
     } catch (error) {
       return null
     }
@@ -218,10 +227,10 @@ const api = {
 
   async getWorkOrdersByLicensePlate(licensePlate: string) {
     try {
-      const response = await http.get(`/work-orders/vehicle/${licensePlate}`)
-      return response.data
+      const response = await http.get<{ data: WorkOrder[] }>(`/work-orders/vehicle/${licensePlate}`)
+      return response.data.data
     } catch (error) {
-      return { data: [] }
+      return []
     }
   },
 
@@ -238,12 +247,14 @@ const api = {
     return http.post(`/work-orders/${id}/notes`, note)
   },
 
-  // Alias para compatibilidad (aunque la funcionalidad puede variar)
   async addWorkOrderItems(id: number, data: any) {
-    // El backend nuevo no parece tener endpoint para agregar items despues de crear
-    // Retornamos null o intentamos usar notes
-    console.warn('addWorkOrderItems no soportado en nuevo backend')
-    return null
+    try {
+      const response = await http.post(`/work-orders/${id}/items`, data)
+      return response.data
+    } catch (error) {
+      console.error('Error adding items:', error)
+      return null
+    }
   },
 
   async approveWorkOrderItem(itemId: number) {
@@ -267,8 +278,8 @@ const api = {
 
   async getMechanicAppointments() {
     try {
-      const response = await http.get<Appointment[]>('/appointments/mechanic')
-      return response.data
+      const response = await http.get<{ data: Appointment[] }>('/appointments/mechanic')
+      return response.data.data
     } catch (error) {
       return []
     }
@@ -277,8 +288,8 @@ const api = {
   async getMyAppointments() {
     try {
       // Asumiendo endpoint para cliente
-      const response = await http.get('/appointments/client')
-      return { data: response.data }
+      const response = await http.get<{ data: Appointment[] }>('/appointments/client')
+      return response.data
     } catch (error) {
       return { data: [] }
     }
@@ -320,21 +331,48 @@ const api = {
       return { data: [] }
     }
   },
+
   async getMySchedules() {
-    return []
+    try {
+      const response = await http.get<{ data: any[] }>('/schedules/my')
+      return response.data.data
+    } catch (error) {
+      return []
+    }
   },
+
   async createSchedule(data: any) {
-    return true
+    try {
+      await http.post('/schedules', data)
+      return true
+    } catch (error) {
+      return false
+    }
   },
+
   async deleteSchedule(id: number) {
-    return true
+    try {
+      await http.delete(`/schedules/${id}`)
+      return true
+    } catch (error) {
+      return false
+    }
   },
 
   // ===== NOTIFICATIONS =====
+  async getAllNotifications() {
+    try {
+      const response = await http.get<{ data: NotificationPayload[] }>('/notifications')
+      return response.data.data
+    } catch (error) {
+      return []
+    }
+  },
+
   async getUnreadNotifications() {
     try {
-      const response = await http.get<NotificationPayload[]>('/notifications/unread')
-      return response.data
+      const response = await http.get<{ data: NotificationPayload[] }>('/notifications/unread')
+      return response.data.data
     } catch (error) {
       return []
     }
@@ -342,6 +380,10 @@ const api = {
 
   async markNotificationRead(id: number) {
     return http.patch(`/notifications/${id}/read`)
+  },
+
+  async deleteNotification(id: number) {
+    return http.delete(`/notifications/${id}`)
   }
 }
 

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
 import { useTheme } from '@/composables/useTheme'
-import { type WorkOrder, WorkOrderStatus } from '@/types/garage'
+import { useRoute } from 'vue-router'
+import { type WorkOrder, WorkOrderStatus, type Vehicle } from '@/types/garage'
 
 const { isDark } = useTheme()
+const route = useRoute()
 
 const orders = ref<WorkOrder[]>([])
 const selectedOrder = ref<WorkOrder | null>(null)
@@ -15,8 +17,24 @@ const newOrderForm = ref({
   licensePlate: '',
   description: '',
   estimatedCost: 0,
-  requestedServices: '',
+  requestedServices: [] as string[],
 })
+
+// Search state
+const vehicleSearch = ref('')
+const vehicleResults = ref<Vehicle[]>([])
+const isLoadingVehicles = ref(false)
+
+const commonServices = [
+  'Cambio de Aceite',
+  'Revisión de Frenos',
+  'Alineación y Balanceo',
+  'Cambio de Batería',
+  'Revisión General',
+  'Cambio de Neumáticos',
+  'Reparación de Motor',
+  'Diagnóstico Eléctrico'
+]
 
 const historySearch = ref('')
 const vehicleHistory = ref<WorkOrder[]>([])
@@ -70,10 +88,24 @@ const loadOrders = async () => {
   orders.value = (data || []).sort((a, b) => a.id - b.id)
 }
 
+watch(() => route.query.workOrderId, async (id) => {
+  if (id) {
+    if (orders.value.length === 0) {
+      await loadOrders()
+    }
+
+    const orderId = Number(id)
+    const order = orders.value.find(o => o.id === orderId)
+    if (order) {
+      viewDetails(order)
+    }
+  }
+}, { immediate: true })
+
 const searchHistory = async () => {
   if (!historySearch.value) return
   const data = await api.getWorkOrdersByLicensePlate(historySearch.value)
-  vehicleHistory.value = data.data || []
+  vehicleHistory.value = data || []
   showHistory.value = true
 }
 
@@ -88,10 +120,30 @@ const createOrder = () => {
     licensePlate: '',
     description: '',
     estimatedCost: 0,
-    requestedServices: '',
+    requestedServices: [],
   }
+  vehicleSearch.value = ''
+  vehicleResults.value = []
   showCreateModal.value = true
 }
+
+watch(vehicleSearch, async (val) => {
+  if (!val || val.length < 2) {
+    vehicleResults.value = []
+    return
+  }
+
+  // Si el valor coincide exactamente con una patente seleccionada, no buscar
+  if (newOrderForm.value.licensePlate === val) return
+
+  isLoadingVehicles.value = true
+  try {
+    const results = await api.searchVehicles(val)
+    vehicleResults.value = results
+  } finally {
+    isLoadingVehicles.value = false
+  }
+})
 
 const submitOrder = async () => {
   if (!newOrderForm.value.licensePlate || !newOrderForm.value.description) {
@@ -103,10 +155,7 @@ const submitOrder = async () => {
     licensePlate: newOrderForm.value.licensePlate,
     description: newOrderForm.value.description,
     estimatedCost: newOrderForm.value.estimatedCost,
-    requestedServices: newOrderForm.value.requestedServices
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s),
+    requestedServices: newOrderForm.value.requestedServices,
     items: [],
   }
 
@@ -151,12 +200,43 @@ export interface NewItem {
   quantity: number
   unitPrice: number
 }
-const addItem = () => {
+const addItem = async () => {
   if (!newItemForm.value.name || newItemForm.value.quantity <= 0 || newItemForm.value.unitPrice <= 0) return
 
-  // Enviar al backend (si existiera endpoint) o agregar localmente a la vista
-  // Por ahora simulamos agregar a la lista local de la orden seleccionada
   if (selectedOrder.value) {
+    const payload = {
+      items: [
+        {
+          name: newItemForm.value.name,
+          type: newItemForm.value.type,
+          quantity: newItemForm.value.quantity,
+          unitPrice: newItemForm.value.unitPrice,
+        },
+      ],
+    }
+
+    const result = await api.addWorkOrderItems(selectedOrder.value.id, payload)
+
+    if (result) {
+      // Refresh order details
+      const updatedOrder = await api.getWorkOrderById(selectedOrder.value.id)
+      if (updatedOrder) {
+        selectedOrder.value = updatedOrder
+      }
+
+      // Reset form
+      newItemForm.value = {
+        name: '',
+        type: '',
+        quantity: 0,
+        unitPrice: 0,
+      }
+      showModalMessage('Éxito', 'Ítem agregado correctamente', 'success')
+    } else {
+      showModalMessage('Error', 'No se pudo agregar el ítem', 'error')
+    }
+  }
+}
 
 const showModalMessage = (
   title: string,
@@ -432,15 +512,29 @@ onMounted(() => {
         <v-card-title class="text-h5 bg-red text-white pa-4"> Nueva Orden de Trabajo </v-card-title>
         <v-card-text class="pa-4">
           <v-form @submit.prevent="submitOrder">
-            <v-text-field
+            <v-autocomplete
               v-model="newOrderForm.licensePlate"
+              v-model:search="vehicleSearch"
+              :items="vehicleResults"
+              :loading="isLoadingVehicles"
+              item-title="licensePlate"
+              item-value="licensePlate"
               label="Patente del Vehículo"
+              placeholder="Escriba para buscar (ej. PT...)"
               variant="outlined"
               color="red"
               class="mb-2"
-              hint="Ingrese la patente del vehículo del cliente"
-              persistent-hint
-            ></v-text-field>
+              hide-no-data
+              hide-details="auto"
+            >
+              <template v-slot:item="{ props, item }">
+                <v-list-item
+                  v-bind="props"
+                  :title="item.raw.licensePlate"
+                  :subtitle="`${item.raw.brand} ${item.raw.model} - ${item.raw.client?.name || 'Cliente'}`"
+                ></v-list-item>
+              </template>
+            </v-autocomplete>
 
             <v-textarea
               v-model="newOrderForm.description"
@@ -461,14 +555,18 @@ onMounted(() => {
               class="mb-2"
             ></v-text-field>
 
-            <v-textarea
+            <v-combobox
               v-model="newOrderForm.requestedServices"
+              :items="commonServices"
               label="Servicios Solicitados"
-              placeholder="Cambio de aceite, Revisión de frenos (separados por coma)"
+              placeholder="Seleccione o escriba servicios"
+              multiple
+              chips
+              closable-chips
               variant="outlined"
               color="red"
-              rows="2"
-            ></v-textarea>
+              class="mb-2"
+            ></v-combobox>
           </v-form>
         </v-card-text>
         <v-card-actions class="pa-4 pt-0">

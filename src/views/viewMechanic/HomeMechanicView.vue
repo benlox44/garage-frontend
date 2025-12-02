@@ -1,17 +1,36 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { useRoute, useRouter } from 'vue-router'
 import HeaderMechanic from '@/components/mechanicView/HeaderMechanic.vue'
 import MechanicAppointments from './MechanicAppointments.vue'
 import MechanicOrders from './MechanicOrders.vue'
 import MechanicSchedule from './MechanicSchedule.vue'
 import Profile from '@/components/clientView/Profile.vue' // Reusing Profile component
+import NotificationsView from '@/views/viewsUser/NotificationsView.vue'
 
 const { isDark } = useTheme()
-const currentSection = ref<'home' | 'orders' | 'appointments' | 'schedule' | 'profile'>('home')
+const route = useRoute()
+const router = useRouter()
+const currentSection = ref<'home' | 'orders' | 'appointments' | 'schedule' | 'profile' | 'notifications'>('home')
 
-const handleNavigation = (section: 'orders' | 'appointments' | 'schedule' | 'profile') => {
+// Watch for query param changes
+watch(
+  () => route.query.section,
+  (newSection) => {
+    if (
+      newSection &&
+      ['home', 'orders', 'appointments', 'schedule', 'profile', 'notifications'].includes(newSection as string)
+    ) {
+      currentSection.value = newSection as any
+    }
+  },
+  { immediate: true },
+)
+
+const handleNavigation = (section: 'orders' | 'appointments' | 'schedule' | 'profile' | 'notifications') => {
   currentSection.value = section
+  router.replace({ query: { ...route.query, section } })
 }
 </script>
 
@@ -58,6 +77,7 @@ const handleNavigation = (section: 'orders' | 'appointments' | 'schedule' | 'pro
         <MechanicAppointments v-else-if="currentSection === 'appointments'" />
         <MechanicSchedule v-else-if="currentSection === 'schedule'" />
         <Profile v-else-if="currentSection === 'profile'" />
+        <NotificationsView v-else-if="currentSection === 'notifications'" />
       </div>
     </div>
   </div>

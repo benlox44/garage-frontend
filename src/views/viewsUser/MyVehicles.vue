@@ -83,11 +83,31 @@ const openEditModal = (vehicle: Vehicle) => {
   showFormModal.value = true
 }
 
+const validateLicensePlate = (plate: string) => {
+  // Eliminar guiones y espacios
+  const cleanPlate = plate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+
+  // Formato antiguo: AA1000 (2 letras, 4 números)
+  const oldFormat = /^[A-Z]{2}\d{4}$/
+  // Formato nuevo: BBCC10 (4 letras, 2 números)
+  const newFormat = /^[A-Z]{4}\d{2}$/
+
+  return oldFormat.test(cleanPlate) || newFormat.test(cleanPlate)
+}
+
 const saveVehicle = async () => {
   if (!formData.value.brand || !formData.value.model || !formData.value.licensePlate || !formData.value.color) {
     showModalMessage('Error', 'Por favor completa todos los campos obligatorios.', 'warning')
     return
   }
+
+  if (!validateLicensePlate(formData.value.licensePlate)) {
+    showModalMessage('Error', 'La patente ingresada no es válida. Debe ser formato chileno (AA1000 o BBCC10).', 'warning')
+    return
+  }
+
+  // Normalizar patente
+  formData.value.licensePlate = formData.value.licensePlate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
 
   try {
     let result

@@ -2,9 +2,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
 import { storeToRefs } from 'pinia'
+import { useRouter, useRoute } from 'vue-router'
 
 const notificationStore = useNotificationStore()
 const { unreadCount, unreadNotifications } = storeToRefs(notificationStore)
+const router = useRouter()
+const route = useRoute()
 
 const isOpen = ref(false)
 const menuRef = ref<HTMLElement | null>(null)
@@ -19,9 +22,16 @@ const closeMenu = (e: MouseEvent) => {
   }
 }
 
-const handleNotificationClick = (id?: number) => {
+const handleNotificationClick = (id?: number, type?: string) => {
   if (id) {
     notificationStore.markAsRead(id)
+  }
+
+  if (!type) return
+
+  // Redirección para Admin
+  if (type.includes('USER') || type.includes('CLIENT') || type.includes('MECHANIC')) {
+    router.push({ path: route.path, query: { section: 'users' } })
   }
 }
 
@@ -41,11 +51,11 @@ onUnmounted(() => {
 })
 
 const getIcon = (type: string) => {
-  if (type.includes('WORK') || type.includes('ORDER')) return '📝'
-  if (type.includes('APPOINTMENT')) return '📅'
-  if (type.includes('USER') || type.includes('CLIENT')) return '👤'
-  if (type.includes('VEHICLE')) return '🚗'
-  return 'ℹ️'
+  if (type.includes('WORK') || type.includes('ORDER')) return 'mdi-file-document-edit'
+  if (type.includes('APPOINTMENT')) return 'mdi-calendar-clock'
+  if (type.includes('USER') || type.includes('CLIENT')) return 'mdi-account'
+  if (type.includes('VEHICLE')) return 'mdi-car'
+  return 'mdi-information'
 }
 </script>
 
@@ -56,27 +66,14 @@ const getIcon = (type: string) => {
       @click.stop="toggleMenu"
       class="relative p-2 text-[#DEF2F1] hover:text-white transition-colors rounded-full hover:bg-[#3AAFA9]/20 focus:outline-none"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-6 w-6 sm:h-7 sm:w-7"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-        />
-      </svg>
+      <i class="mdi mdi-bell text-2xl"></i>
 
       <!-- Badge -->
       <span
         v-if="unreadCount > 0"
-        class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full border-2 border-[#17252A]"
+        class="absolute top-0 right-0 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full border-2 border-[#17252A]"
       >
-        {{ unreadCount }}
+        {{ unreadCount > 99 ? '99+' : unreadCount }}
       </span>
     </button>
 
@@ -94,7 +91,9 @@ const getIcon = (type: string) => {
         class="absolute right-0 mt-2 w-80 sm:w-96 bg-[#17252A] border border-[#3AAFA9]/30 rounded-xl shadow-2xl overflow-hidden z-50"
       >
         <div class="p-4 border-b border-[#3AAFA9]/20 flex justify-between items-center bg-[#2B7A78]/20">
-          <h3 class="text-[#DEF2F1] font-bold">Notificaciones</h3>
+          <h3 class="text-[#DEF2F1] font-bold flex items-center gap-2">
+            <i class="mdi mdi-bell-ring"></i> Notificaciones
+          </h3>
           <button
             v-if="unreadCount > 0"
             @click="markAllRead"
@@ -105,7 +104,8 @@ const getIcon = (type: string) => {
         </div>
 
         <div class="max-h-96 overflow-y-auto custom-scrollbar">
-          <div v-if="unreadNotifications.length === 0" class="p-8 text-center text-[#3AAFA9]/60">
+          <div v-if="unreadNotifications.length === 0" class="p-8 text-center text-[#3AAFA9]/60 flex flex-col items-center gap-3">
+            <i class="mdi mdi-bell-sleep-outline text-5xl opacity-50"></i>
             <p>No tienes notificaciones nuevas</p>
           </div>
 
@@ -113,11 +113,11 @@ const getIcon = (type: string) => {
             <li
               v-for="notification in unreadNotifications"
               :key="notification.id"
-              @click="handleNotificationClick(notification.id)"
-              class="p-4 hover:bg-[#3AAFA9]/10 transition-colors cursor-pointer flex gap-3 items-start"
+              @click="handleNotificationClick(notification.id, notification.type)"
+              class="p-4 hover:bg-[#3AAFA9]/10 transition-colors cursor-pointer flex gap-3 items-start group"
             >
-              <div class="shrink-0 mt-1 text-xl">
-                {{ getIcon(notification.type) }}
+              <div class="shrink-0 mt-1 text-[#3AAFA9] group-hover:text-[#DEF2F1] transition-colors">
+                <i class="mdi text-2xl" :class="getIcon(notification.type)"></i>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-[#DEF2F1] truncate">
@@ -126,12 +126,13 @@ const getIcon = (type: string) => {
                 <p class="text-xs text-[#3AAFA9] mt-0.5 line-clamp-2">
                   {{ notification.message }}
                 </p>
-                <p class="text-[10px] text-[#3AAFA9]/60 mt-1">
+                <p class="text-[10px] text-[#3AAFA9]/60 mt-1 flex items-center gap-1">
+                  <i class="mdi mdi-clock-outline text-[10px]"></i>
                   {{ new Date(notification.createdAt || Date.now()).toLocaleString() }}
                 </p>
               </div>
-              <div class="shrink-0">
-                <div class="w-2 h-2 bg-[#3AAFA9] rounded-full"></div>
+              <div class="shrink-0 flex flex-col items-end gap-2">
+                <div class="w-2 h-2 bg-[#3AAFA9] rounded-full shadow-[0_0_5px_#3AAFA9]"></div>
               </div>
             </li>
           </ul>

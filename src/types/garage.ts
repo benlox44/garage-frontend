@@ -35,6 +35,10 @@ export interface Vehicle {
   color?: string
   status: VehicleStatus
   userId: number
+  client?: {
+    name: string
+    email: string
+  }
 }
 
 export interface WorkOrderItem {
@@ -73,6 +77,7 @@ export interface Appointment {
   }
   description?: string
   time?: string
+  rejectionReason?: string
 }
 
 export interface NotificationPayload {

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
 import { useTheme } from '@/composables/useTheme'
+import { useRoute } from 'vue-router'
 import type { WorkOrder, WorkOrderItem } from '@/types/garage'
 
 const { isDark } = useTheme()
+const route = useRoute()
 
 const orders = ref<WorkOrder[]>([])
 const selectedOrder = ref<WorkOrder | null>(null)
@@ -22,6 +24,21 @@ const loadOrders = async () => {
   const data = await api.getClientWorkOrders()
   orders.value = data
 }
+
+watch(() => route.query.workOrderId, async (id) => {
+  if (id) {
+    // Asegurar que las órdenes estén cargadas
+    if (orders.value.length === 0) {
+      await loadOrders()
+    }
+
+    const orderId = Number(id)
+    const order = orders.value.find(o => o.id === orderId)
+    if (order) {
+      viewDetails(order)
+    }
+  }
+}, { immediate: true })
 
 const viewDetails = (order: WorkOrder) => {
   selectedOrder.value = order

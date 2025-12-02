@@ -15,6 +15,7 @@ export const useNotificationStore = defineStore('notification', () => {
   const toastNotifications = ref<UINotification[]>([])
   // Notificaciones persistentes (Campanita)
   const unreadNotifications = ref<NotificationPayload[]>([])
+  const allNotifications = ref<NotificationPayload[]>([])
   const unreadCount = ref(0)
 
   let nextToastId = 1
@@ -28,6 +29,7 @@ export const useNotificationStore = defineStore('notification', () => {
       showToast(payload.message, mapTypeToToast(payload.type))
       // 2. Agregar a la lista de no leídas
       unreadNotifications.value.unshift(payload)
+      allNotifications.value.unshift(payload)
       unreadCount.value++
     })
   }
@@ -38,10 +40,25 @@ export const useNotificationStore = defineStore('notification', () => {
     unreadCount.value = data.length
   }
 
+  async function fetchAll() {
+    const data = await api.getAllNotifications()
+    allNotifications.value = data
+  }
+
   async function markAsRead(id: number) {
     await api.markNotificationRead(id)
     unreadNotifications.value = unreadNotifications.value.filter(n => n.id !== id)
+    const notif = allNotifications.value.find(n => n.id === id)
+    if (notif) notif.read = true
     unreadCount.value = Math.max(0, unreadCount.value - 1)
+  }
+
+  async function deleteNotification(id: number) {
+    await api.deleteNotification(id)
+    unreadNotifications.value = unreadNotifications.value.filter(n => n.id !== id)
+    allNotifications.value = allNotifications.value.filter(n => n.id !== id)
+    // Recalcular unread count por si acaso se borró una no leída
+    unreadCount.value = unreadNotifications.value.length
   }
 
   // --- Lógica de Toasts ---
@@ -67,11 +84,14 @@ export const useNotificationStore = defineStore('notification', () => {
   return {
     toastNotifications,
     unreadNotifications,
+    allNotifications,
     unreadCount,
     show: showToast,
     remove: removeToast,
     initialize,
     fetchUnread,
-    markAsRead
+    fetchAll,
+    markAsRead,
+    deleteNotification
   }
 })

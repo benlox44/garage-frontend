@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
 import { useTheme } from '@/composables/useTheme'
+import { useRoute } from 'vue-router'
 import type { Appointment } from '@/types/garage'
 
 const { isDark } = useTheme()
+const route = useRoute()
 
 const appointments = ref<Appointment[]>([])
 const showModal = ref(false)
@@ -20,6 +22,22 @@ const modalConfig = ref({
 const loadAppointments = async () => {
   const data = await api.getMechanicAppointments()
   appointments.value = data
+  checkDeepLink()
+}
+
+const checkDeepLink = async () => {
+  const id = route.query.appointmentId
+  if (id) {
+    await nextTick()
+    setTimeout(() => {
+      const element = document.getElementById(`appt-${id}`)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        element.classList.add('highlighted')
+        setTimeout(() => element.classList.remove('highlighted'), 3000)
+      }
+    }, 500)
+  }
 }
 
 const confirmAccept = (appt: Appointment) => {
@@ -98,7 +116,7 @@ onMounted(() => {
     <div class="appointments-list">
       <div v-if="appointments.length === 0" class="no-data">No hay citas pendientes.</div>
 
-      <div v-for="appt in appointments" :key="appt.id" class="appt-card">
+      <div v-for="appt in appointments" :key="appt.id" :id="`appt-${appt.id}`" class="appt-card">
         <div class="appt-header">
           <v-row align="center" justify="space-between">
             <v-col cols="auto" md="auto">
@@ -199,6 +217,23 @@ onMounted(() => {
   background: #1a1a1a;
   border: 1px solid #333;
   box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
+}
+
+.appt-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.appt-card.highlighted {
+  animation: highlight-pulse 2s ease-in-out;
+  border: 2px solid #d90000;
+  box-shadow: 0 0 15px rgba(217, 0, 0, 0.5);
+}
+
+@keyframes highlight-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
 }
 
 .appt-header {

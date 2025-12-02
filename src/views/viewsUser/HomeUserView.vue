@@ -1,19 +1,44 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { useRoute, useRouter } from 'vue-router'
 import HeaderClient from '@/components/clientView/headerClient.vue'
 import ScheduleCalendar from '@/components/clientView/SheduleCalendar.vue'
 import MyAppointments from '@/components/clientView/MyAppointments.vue'
 import Orders from '@/components/clientView/Orders.vue'
 import Profile from '@/components/clientView/Profile.vue'
 import MyVehicles from './MyVehicles.vue'
+import NotificationsView from './NotificationsView.vue'
 
 const { isDark } = useTheme()
-const currentSection = ref<'home' | 'orders' | 'appointments' | 'vehicles' | 'profile'>('home')
+const route = useRoute()
+const router = useRouter()
+const currentSection = ref<'home' | 'orders' | 'appointments' | 'vehicles' | 'profile' | 'notifications'>('home')
 const activeTab = ref<'calendar' | 'appointments'>('calendar')
 
-const handleNavigation = (section: 'orders' | 'appointments' | 'vehicles' | 'profile') => {
+// Watch for query param changes to handle external navigation (e.g. notifications)
+watch(
+  () => route.query.section,
+  (newSection) => {
+    if (
+      newSection &&
+      ['home', 'orders', 'appointments', 'vehicles', 'profile', 'notifications'].includes(newSection as string)
+    ) {
+      currentSection.value = newSection as any
+
+      // Si es appointments y viene un ID, cambiar a la pestaña de mis citas
+      if (newSection === 'appointments' && route.query.appointmentId) {
+        activeTab.value = 'appointments'
+      }
+    }
+  },
+  { immediate: true },
+)
+
+const handleNavigation = (section: 'orders' | 'appointments' | 'vehicles' | 'profile' | 'notifications') => {
   currentSection.value = section
+  // Update URL without reloading to keep state consistent
+  router.replace({ query: { ...route.query, section } })
 }
 </script>
 
@@ -96,6 +121,11 @@ const handleNavigation = (section: 'orders' | 'appointments' | 'vehicles' | 'pro
       <!-- Profile Section -->
       <div v-else-if="currentSection === 'profile'" class="section-content">
         <Profile :is-dark="isDark" />
+      </div>
+
+      <!-- Notifications Section -->
+      <div v-else-if="currentSection === 'notifications'" class="section-content">
+        <NotificationsView />
       </div>
     </div>
   </div>

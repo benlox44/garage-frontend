@@ -2,16 +2,53 @@
 import { useNotificationStore } from '@/stores/notification'
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
+import type { NotificationPayload } from '@/types/garage'
 
 const notificationStore = useNotificationStore()
 const { unreadCount, unreadNotifications } = storeToRefs(notificationStore)
+const router = useRouter()
+const route = useRoute()
 
 onMounted(() => {
   notificationStore.initialize()
 })
 
-const handleNotificationClick = (id?: number) => {
-  if (id) notificationStore.markAsRead(id)
+const handleNotificationClick = (notification: NotificationPayload) => {
+  if (notification.id) notificationStore.markAsRead(notification.id)
+
+  const query: Record<string, string | number> = {}
+
+  if (notification.type.includes('APPOINTMENT')) {
+    query.section = 'appointments'
+    if (notification.metadata?.appointmentId) {
+      query.appointmentId = notification.metadata.appointmentId as number
+    }
+  } else if (notification.type.includes('WORK') || notification.type.includes('ORDER')) {
+    query.section = 'orders'
+    if (notification.metadata?.workOrderId) {
+      query.workOrderId = notification.metadata.workOrderId as number
+    }
+  } else if (notification.type.includes('VEHICLE')) {
+    // Solo clientes tienen sección de vehículos
+    if (route.path.includes('/usuario')) {
+      query.section = 'vehicles'
+    }
+  }
+
+  router.push({ path: route.path, query })
+}
+
+const viewAllNotifications = () => {
+  if (route.path.includes('/usuario')) {
+    router.push({ path: '/usuario', query: { section: 'notifications' } })
+  } else if (route.path.includes('/mechanic')) {
+    router.push({ path: '/mechanic', query: { section: 'notifications' } })
+  } else {
+    // Fallback
+    router.push({ path: '/usuario', query: { section: 'notifications' } })
+  }
 }
 
 const markAllRead = () => {
@@ -83,7 +120,7 @@ const formatDate = (dateStr?: string) => {
         <v-list-item
           v-for="item in unreadNotifications"
           :key="item.id"
-          @click="handleNotificationClick(item.id)"
+          @click="handleNotificationClick(item)"
           link
         >
           <template v-slot:prepend>
@@ -114,6 +151,13 @@ const formatDate = (dateStr?: string) => {
         <v-icon size="large" color="grey-lighten-1" class="mb-2">mdi-bell-sleep</v-icon>
         <div>No tienes notificaciones nuevas</div>
       </div>
+
+      <v-divider></v-divider>
+      <v-card-actions>
+        <v-btn block variant="text" color="primary" @click="viewAllNotifications">
+          Ver todas las notificaciones
+        </v-btn>
+      </v-card-actions>
     </v-card>
   </v-menu>
 </template>
