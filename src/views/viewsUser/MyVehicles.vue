@@ -2,15 +2,7 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
-
-interface Vehicle {
-  id: number
-  brand: string
-  model: string
-  year: number
-  licensePlate: string
-  color: string
-}
+import type { Vehicle } from '@/types/garage'
 
 const vehicles = ref<Vehicle[]>([])
 const loading = ref(true)
@@ -55,8 +47,8 @@ const showModalMessage = (
 const loadVehicles = async () => {
   loading.value = true
   try {
-    const response = await api.getMyVehicles()
-    vehicles.value = response.data || []
+    const data = await api.getMyVehicles()
+    vehicles.value = data || []
   } catch (error) {
     console.error('Error loading vehicles:', error)
     showModalMessage('Error', 'No se pudieron cargar los vehículos.', 'error')
@@ -136,6 +128,24 @@ const confirmDelete = (vehicleId: number) => {
   showModal.value = true
 }
 
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'AVAILABLE': return 'success'
+    case 'IN_SERVICE': return 'warning'
+    case 'READY_FOR_PICKUP': return 'info'
+    default: return 'grey'
+  }
+}
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case 'AVAILABLE': return 'Disponible'
+    case 'IN_SERVICE': return 'En Servicio'
+    case 'READY_FOR_PICKUP': return 'Listo para Retiro'
+    default: return status
+  }
+}
+
 onMounted(() => {
   loadVehicles()
 })
@@ -173,12 +183,21 @@ onMounted(() => {
             <v-card-subtitle class="text-subtitle-1">
               {{ vehicle.year }}
             </v-card-subtitle>
+            <template v-slot:append>
+              <v-chip :color="getStatusColor(vehicle.status)" size="small" class="font-weight-bold">
+                {{ getStatusText(vehicle.status) }}
+              </v-chip>
+            </template>
           </v-card-item>
 
           <v-card-text class="pt-4">
             <div class="d-flex align-center mb-2">
               <v-icon size="20" color="grey-darken-1" class="mr-2">mdi-card-account-details</v-icon>
               <span class="text-body-1 font-weight-medium">{{ vehicle.licensePlate }}</span>
+            </div>
+            <div class="d-flex align-center mb-2" v-if="vehicle.color">
+              <v-icon size="20" color="grey-darken-1" class="mr-2">mdi-palette</v-icon>
+              <span class="text-body-1">{{ vehicle.color }}</span>
             </div>
           </v-card-text>
 

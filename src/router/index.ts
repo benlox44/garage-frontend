@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import HomeUserView from '@/views/viewsUser/HomeUserView.vue'
 import HomeAdminView from '@/views/viewsAdmin/HomeAdminView.vue'
@@ -25,16 +26,19 @@ const router = createRouter({
       path: '/usuario',
       name: 'usuario',
       component: HomeUserView,
+      meta: { requiresAuth: true, role: 'client' }
     },
     {
       path: '/admin',
       name: 'admin',
       component: HomeAdminView,
+      meta: { requiresAuth: true, role: 'admin' }
     },
     {
       path: '/mechanic',
       name: 'mechanic',
       component: HomeMechanicView,
+      meta: { requiresAuth: true, role: 'mechanic' }
     },
     {
       path: '/auth/reset-password',
@@ -48,6 +52,19 @@ const router = createRouter({
     },
     { path: '/auth/unlock-account', name: 'unlock-account', component: UnlockAccount },
   ],
+})
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore()
+
+  // Si la ruta requiere autenticación
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next({ name: 'login' })
+  } else {
+    // Aquí se podría agregar lógica para verificar roles
+    // if (to.meta.role && authStore.user?.role !== to.meta.role) ...
+    next()
+  }
 })
 
 export default router

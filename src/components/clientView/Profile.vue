@@ -41,10 +41,10 @@ const loadProfile = async () => {
     user.value = {
       name: data.name,
       email: data.email,
-      role: data.rol,
+      role: data.role, // Corregido de .rol a .role
     }
     editForm.value.name = data.name
-    // Assuming phone comes from backend, if not it will be empty
+    editForm.value.phone = data.phone || '' // Cargar teléfono si existe
   }
 }
 
@@ -55,12 +55,17 @@ const startEditing = () => {
 const cancelEditing = () => {
   isEditing.value = false
   editForm.value.name = user.value.name
+  // Resetear teléfono también si es necesario, aunque no se muestra en user.value actualmente
 }
 
 const saveProfile = async () => {
-  const success = await api.updateProfile({ name: editForm.value.name })
+  const success = await api.updateProfile({
+    name: editForm.value.name,
+    phone: editForm.value.phone
+  })
   if (success) {
     user.value.name = editForm.value.name
+    // Actualizar teléfono en user.value si decidimos mostrarlo
     isEditing.value = false
     showModalMessage('Éxito', 'Perfil actualizado correctamente', 'success')
   } else {
@@ -169,6 +174,10 @@ onMounted(() => {
             <div class="form-group">
               <label>Nombre Completo</label>
               <input v-model="editForm.name" type="text" class="letra-forms" />
+            </div>
+            <div class="form-group">
+              <label>Teléfono</label>
+              <input v-model="editForm.phone" type="text" class="letra-forms" placeholder="+569..." />
             </div>
             <div class="form-actions">
               <button @click="cancelEditing" class="cancel-btn">Cancelar</button>

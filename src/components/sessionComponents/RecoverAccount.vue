@@ -71,7 +71,11 @@ export default {
       const isValid = await this.$refs.form.validate()
 
       if (!isValid.valid) {
-        console.log('Formulario inválido ❌')
+        // Aquí iría la lógica para enviar el código al backend
+      alert(`Código enviado: ${codigo.value}`)
+    } else {
+      // Formulario inválido
+    }
         return
       }
       this.loading = true // ⏳ inicia spinner

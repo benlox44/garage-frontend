@@ -3,27 +3,8 @@ import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
 import { useTheme } from '@/composables/useTheme'
-interface WorkOrderItem {
-  id: number
-  name: string
-  type: string
-  quantity: number
-  unitPrice: number
-  isApproved: boolean
-  requiresApproval: boolean
-}
+import type { WorkOrder, WorkOrderItem } from '@/types/garage'
 
-interface WorkOrder {
-  id: number
-  status: string
-  vehicle: {
-    licensePlate: string
-    brand: string
-    model: string
-  }
-  items: WorkOrderItem[]
-  createdAt: string
-}
 const { isDark } = useTheme()
 
 const orders = ref<WorkOrder[]>([])
@@ -57,9 +38,9 @@ const approveItem = async (item: WorkOrderItem) => {
     type: 'warning',
     showCancel: true,
     action: async () => {
-      const success = await api.approveWorkOrderItem(item.id)
+      const success = await api.approveWorkOrderItem(item.id!)
       if (success) {
-        item.isApproved = true
+        item.approved = true
         showModal.value = false
         // Refresh orders to ensure sync
         await loadOrders()
@@ -125,7 +106,7 @@ const normalizerTypeItems = (type: string) => {
       return type
   }
 }
-const normalizerApprovedItems = (approved: boolean) => {
+const normalizerApprovedItems = (approved?: boolean) => {
   if (approved === false) return 'Por aprobar'
   if (approved === true) return 'Aprobado'
   return 'Desconocido'
@@ -145,7 +126,7 @@ const formatCurrency = (value: number | string | null | undefined) => {
     maximumFractionDigits: 0,
   })
 }
-const getApprovedColor = (approved: boolean) => {
+const getApprovedColor = (approved?: boolean) => {
   if (approved === true) return isDark.value ? '#4ade80' : '#27ae60' // Verde
   if (approved === false) return isDark.value ? '#facc15' : '#f1c40f' // Amarillo
   return isDark.value ? '#9ca3af' : '#7f8c8d' // Gris fallback
@@ -187,7 +168,7 @@ onMounted(() => {
 
         <div class="order-vehicle">
           <h3 :style="{ margin: 0, color: isDark ? '#ffdede' : '#1f2937' }">
-            {{ order.vehicle.brand }} {{ order.vehicle.model }}
+            {{ order.vehicle?.brand }} {{ order.vehicle?.model }}
           </h3>
           <span
             class="plate"
@@ -201,7 +182,7 @@ onMounted(() => {
               fontWeight: '700',
             }"
           >
-            {{ order.vehicle.licensePlate || 'Sin patente' }}
+            {{ order.vehicle?.licensePlate || 'Sin patente' }}
           </span>
         </div>
 
@@ -258,8 +239,8 @@ onMounted(() => {
               <h3 :style="{ color: isDark ? '#ffdede' : '#111827' }">Vehículo</h3>
 
               <p :style="{ color: isDark ? '#ffdede' : '#4b5563' }">
-                {{ selectedOrder.vehicle.brand }}
-                {{ selectedOrder.vehicle.model }}
+                {{ selectedOrder.vehicle?.brand }}
+                {{ selectedOrder.vehicle?.model }}
                 -
                 <span
                   :style="{
@@ -273,7 +254,7 @@ onMounted(() => {
                       : '1px solid rgba(217,0,0,0.12)',
                   }"
                 >
-                  {{ selectedOrder.vehicle.licensePlate || 'Sin patente' }}
+                  {{ selectedOrder.vehicle?.licensePlate || 'Sin patente' }}
                 </span>
               </p>
             </v-col>
@@ -319,23 +300,23 @@ onMounted(() => {
                   class="item-quantity"
                   :style="{
                     fontWeight: '700',
-                    color: getApprovedColor(item.isApproved),
+                    color: getApprovedColor(item.approved),
                   }"
                 >
-                  {{ normalizerApprovedItems(item.isApproved) }}
+                  {{ normalizerApprovedItems(item.approved) }}
                 </span>
               </v-col>
             </v-row>
             <div class="item-action">
               <span
-                v-if="item.isApproved"
+                v-if="item.approved"
                 class="approved-badge"
                 :style="{ color: isDark ? '#34d399' : '#27ae60' }"
               >
                 <v-icon color="green" size="small">mdi-check-circle</v-icon> Aprobado
               </span>
               <button
-                v-if="!item.isApproved && item.requiresApproval"
+                v-if="!item.approved && item.type === 'spare_part'"
                 class="approve-btn"
                 @click.stop="approveItem(item)"
                 :style="{
@@ -347,7 +328,7 @@ onMounted(() => {
               </button>
 
               <span
-                v-else-if="item.requiresApproval === false"
+                v-else-if="item.type !== 'spare_part'"
                 class="approved-badge"
                 :style="{ color: isDark ? '#9ca3af' : '#7f8c8d' }"
               >

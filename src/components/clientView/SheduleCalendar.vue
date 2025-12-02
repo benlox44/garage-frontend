@@ -3,29 +3,9 @@ import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
 import { useTheme } from '@/composables/useTheme'
+import type { Schedule, Vehicle } from '@/types/garage'
+
 const { isDark } = useTheme()
-
-interface Mechanic {
-  id: number
-  name: string
-}
-
-interface Schedule {
-  id: number
-  mechanicId: number
-  date: string
-  availableHours: string[]
-  mechanic: Mechanic
-}
-
-interface Vehicle {
-  id: number
-  licensePlate: string
-  brand: string
-  model: string
-  year: number
-  color: string
-}
 
 interface SelectedSlot {
   scheduleId: number
@@ -59,7 +39,8 @@ const loadData = async () => {
   ])
 
   schedules.value = schedulesData.data || []
-  vehicles.value = vehiclesData.data || []
+  // getMyVehicles devuelve el array directamente
+  vehicles.value = Array.isArray(vehiclesData) ? vehiclesData : []
   loading.value = false
 }
 

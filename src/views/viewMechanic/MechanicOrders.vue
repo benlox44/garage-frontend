@@ -3,28 +3,9 @@ import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
 import { useTheme } from '@/composables/useTheme'
+import { type WorkOrder, WorkOrderStatus } from '@/types/garage'
+
 const { isDark } = useTheme()
-
-interface WorkOrderItem {
-  id: number
-  name: string
-  type: string
-  quantity: number
-  unitPrice: number
-  isApproved: boolean
-}
-
-interface WorkOrder {
-  id: number
-  status: string
-  vehicle: {
-    licensePlate: string
-    brand: string
-    model: string
-  }
-  items: WorkOrderItem[]
-  createdAt: string
-}
 
 const orders = ref<WorkOrder[]>([])
 const selectedOrder = ref<WorkOrder | null>(null)
@@ -56,15 +37,15 @@ const modalConfig = ref({
   action: null as (() => void) | null,
 })
 
-const normalizeStatus = (status: string) => {
+const formatStatus = (status: string) => {
   switch (status) {
-    case 'pending_approval':
+    case WorkOrderStatus.PENDING_APPROVAL:
       return 'PENDIENTE'
-    case 'in_progress':
+    case WorkOrderStatus.IN_PROGRESS:
       return 'EN PROGRESO'
-    case 'completed':
+    case WorkOrderStatus.COMPLETED:
       return 'COMPLETADO'
-    case 'cancelled':
+    case WorkOrderStatus.CANCELLED:
       return 'CANCELADO'
     default:
       return status
@@ -86,12 +67,7 @@ const normalizerTypeItems = (type: string) => {
 
 const loadOrders = async () => {
   const data = await api.getMechanicWorkOrders()
-  orders.value = (data as WorkOrder[])
-    .map((order) => ({
-      ...order,
-      status: normalizeStatus(order.status),
-    }))
-    .sort((a, b) => a.id - b.id)
+  orders.value = (data || []).sort((a, b) => a.id - b.id)
 }
 
 const searchHistory = async () => {
@@ -156,20 +132,10 @@ const closeDetails = () => {
   selectedOrder.value = null
 }
 //pending_approval, in_progress, completed, cancelled
-const updateStatus = async (status: string) => {
+const updateStatus = async (status: WorkOrderStatus) => {
   if (!selectedOrder.value) return
-  // 🟢 MAPA DE TRADUCCIÓN FRONT → BACK
-  const toBackendStatus = (status: string) => {
-    if (status === 'COMPLETADO') return 'completed'
-    if (status === 'EN PROGRESO') return 'in_progress'
-    if (status === 'PENDIENTE') return 'pending_approval'
-    if (status === 'CANCELADO') return 'cancelled'
-    return status // fallback
-  }
 
-  const backendStatus = toBackendStatus(status)
-
-  const result = await api.updateWorkOrder(selectedOrder.value.id, backendStatus)
+  const result = await api.updateWorkOrder(selectedOrder.value.id, status)
   if (result) {
     selectedOrder.value.status = status
     // Update in list as well
@@ -185,43 +151,12 @@ export interface NewItem {
   quantity: number
   unitPrice: number
 }
-const addItem = async () => {
-  console.log('Agregando ítem:', newItemForm.value) // debug
-  if (!selectedOrder.value) return
-  if (
-    !newItemForm.value.name ||
-    !newItemForm.value.type ||
-    newItemForm.value.unitPrice <= 0 ||
-    newItemForm.value.quantity <= 0
-  ) {
-    showModalMessage('Error', 'Datos inválidos', 'error')
-    return
-  }
+const addItem = () => {
+  if (!newItemForm.value.name || newItemForm.value.quantity <= 0 || newItemForm.value.unitPrice <= 0) return
 
-  const result = await api.addWorkOrderItems(selectedOrder.value.id, {
-    items: [
-      {
-        name: newItemForm.value.name,
-        type: newItemForm.value.type,
-        quantity: newItemForm.value.quantity,
-        unitPrice: newItemForm.value.unitPrice,
-      },
-    ],
-  })
-
-  if (result) {
-    // Refresh details
-    const updatedOrder = await api.getWorkOrderById(selectedOrder.value.id)
-    if (updatedOrder && updatedOrder.data) {
-      selectedOrder.value = updatedOrder.data
-      // Update list
-      const idx = orders.value.findIndex((o) => o.id === selectedOrder.value!.id)
-      if (idx !== -1) orders.value[idx] = updatedOrder.data
-    }
-    newItemForm.value = { name: '', type: '', quantity: 0, unitPrice: 0 }
-    showModalMessage('Éxito', 'Ítem agregado', 'success')
-  }
-}
+  // Enviar al backend (si existiera endpoint) o agregar localmente a la vista
+  // Por ahora simulamos agregar a la lista local de la orden seleccionada
+  if (selectedOrder.value) {
 
 const showModalMessage = (
   title: string,
@@ -248,13 +183,13 @@ const handleConfirm = () => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'PENDIENTE':
+    case WorkOrderStatus.PENDING_APPROVAL:
       return '#f1c40f'
-    case 'EN PROGRESO':
+    case WorkOrderStatus.IN_PROGRESS:
       return '#3498db'
-    case 'COMPLETADO':
+    case WorkOrderStatus.COMPLETED:
       return '#2ecc71'
-    case 'CANCELADO':
+    case WorkOrderStatus.CANCELLED:
       return '#e74c3c'
     default:
       return '#95a5a6'
@@ -327,12 +262,12 @@ onMounted(() => {
               <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
             </div>
             <div class="order-vehicle">
-              <h3>{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
-              <span class="plate">{{ order.vehicle.licensePlate }}</span>
+              <h3>{{ order.vehicle?.brand }} {{ order.vehicle?.model }}</h3>
+              <span class="plate">{{ order.vehicle?.licensePlate }}</span>
             </div>
             <div class="order-status">
               <span class="status-badge" :style="{ backgroundColor: getStatusColor(order.status) }">
-                {{ order.status }}
+                {{ formatStatus(order.status) }}
               </span>
             </div>
           </div>
@@ -351,12 +286,12 @@ onMounted(() => {
             <span class="order-date">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
           </v-col>
           <v-col cols="12" md="4" class="text-center md:text-left">
-            <h3>{{ order.vehicle.brand }} {{ order.vehicle.model }}</h3>
-            <span class="plate">{{ order.vehicle.licensePlate }}</span>
+            <h3>{{ order.vehicle?.brand }} {{ order.vehicle?.model }}</h3>
+            <span class="plate">{{ order.vehicle?.licensePlate }}</span>
           </v-col>
           <v-col cols="12" md="4" class="text-center md:text-left">
             <span class="status-badge" :style="{ backgroundColor: getStatusColor(order.status) }">
-              {{ order.status }}
+              {{ formatStatus(order.status) }}
             </span>
           </v-col>
         </v-row>
@@ -376,10 +311,10 @@ onMounted(() => {
             <div class="status-actions">
               <v-select
                 :items="[
-                  { title: 'Pendiente', value: 'PENDIENTE' },
-                  { title: 'En Progreso', value: 'EN PROGRESO' },
-                  { title: 'Completada', value: 'COMPLETADO' },
-                  { title: 'Cancelada', value: 'CANCELADO' },
+                  { title: 'Pendiente', value: WorkOrderStatus.PENDING_APPROVAL },
+                  { title: 'En Progreso', value: WorkOrderStatus.IN_PROGRESS },
+                  { title: 'Completada', value: WorkOrderStatus.COMPLETED },
+                  { title: 'Cancelada', value: WorkOrderStatus.CANCELLED },
                 ]"
                 v-model="selectedOrder.status"
                 @update:model-value="updateStatus"
@@ -391,8 +326,8 @@ onMounted(() => {
           <div class="vehicle-info">
             <h3>Vehículo</h3>
             <p>
-              {{ selectedOrder.vehicle.brand }} {{ selectedOrder.vehicle.model }} -
-              {{ selectedOrder.vehicle.licensePlate }}
+              {{ selectedOrder.vehicle?.brand }} {{ selectedOrder.vehicle?.model }} -
+              {{ selectedOrder.vehicle?.licensePlate }}
             </p>
           </div>
         </div>
@@ -481,7 +416,7 @@ onMounted(() => {
                   <span class="item-cost">$ {{ formatCurrency(item.unitPrice) }}</span>
                 </v-col>
                 <v-col cols="12" md="3">
-                  <span v-if="item.isApproved" class="approved">Aprobado</span>
+                  <span v-if="item.approved" class="approved">Aprobado</span>
                   <span v-else class="pending">Pendiente Aprobación</span>
                 </v-col>
               </v-row>

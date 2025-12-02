@@ -63,6 +63,11 @@
 
         <v-spacer></v-spacer>
 
+        <!-- Notifications Button -->
+        <v-col cols="auto" class="d-flex align-center mr-1 mr-sm-2">
+          <NotificationBell />
+        </v-col>
+
         <!-- Theme Toggle - Hidden on xs, shown on sm+ -->
         <v-col cols="auto" class="d-none d-sm-flex align-center mr-2 mr-sm-3">
           <ThemeToggle />
@@ -212,6 +217,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import api from '@/services/garage-back-api'
 import { ref } from 'vue'
 import Modal from '@/components/shared/Modal.vue'
+import NotificationBell from '@/components/shared/NotificationBell.vue'
 
 const { isDark } = useTheme()
 const router = useRouter()

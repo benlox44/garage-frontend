@@ -41,9 +41,7 @@ import api from '@/services/garage-back-api'
 
 const lostPassword = async (email) => {
   try {
-    console.log('Lalamando a la API para recuperar contraseña con email:', email)
     const response = await api.requestPasswordReset(email)
-    console.log('Respuesta del servidor:', response)
     return response
   } catch (error) {
     console.error('Error en la API:', error)

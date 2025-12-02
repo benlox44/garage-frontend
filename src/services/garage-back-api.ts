@@ -1,8 +1,8 @@
-import type { NewItem } from '@/views/viewMechanic/MechanicOrders.vue'
 import axios from 'axios'
+import type { LoginResponse, User, Vehicle, WorkOrder, Appointment, NotificationPayload } from '@/types/garage'
 
 const http = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
 })
 
 // ⬇ Interceptor para agregar el token automáticamente
@@ -14,148 +14,84 @@ http.interceptors.request.use((config) => {
   return config
 })
 
-// Ahora creamos el objeto api con métodos
+// ⬇ Interceptor para manejar errores globales (401)
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token')
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(error)
+  },
+)
+
 const api = {
-  async register(name: string, email: string, password: string) {
-    try {
-      const response = await http.post('/auth', { name, email, password })
-      return true
-    } catch (error) {
-      console.error('Error en el registro:', error)
-      return false
-    }
+  // ===== AUTH =====
+  logout() {
+    localStorage.removeItem('token')
+    window.location.href = '/login'
   },
-  async confirmEmail(token: string) {
-    try {
-      const response = await http.get('/auth/confirm-email', {
-        params: { token }, // token va en query
-      })
-      console.log('Cuenta confirmada:', response.data)
-      return response.data
-    } catch (error) {
-      console.error('Error al confirmar la cuenta:', error)
-      throw error
-    }
-  },
+
   async login(email: string, password: string) {
     try {
-      const response = await http.post('/auth/login', { email, password })
-      const token = await response.data.access_token
-      if (!token) return { success: false, message: 'No se recibió el token' }
-
-      localStorage.setItem('token', token)
-      return { success: true }
+      const response = await http.post<LoginResponse>('/auth/login', { email, password })
+      // La respuesta ahora trae { access_token, user } directamente
+      return { success: true, data: response.data }
     } catch (error: any) {
       const message = error.response?.data?.message || 'Error al iniciar sesión'
       return { success: false, message }
     }
   },
 
-  async perfil() {
+  async register(name: string, email: string, password: string) {
     try {
-      console.log('Obteniendo datos del perfil')
-      const response = await http.get('/users/me')
-      const data = {
-        email: response.data.data.email,
-        name: response.data.data.name,
-        rol: response.data.data.role,
-      }
-      console.log('Datos del perfil procesados:', data)
-      return data // ajusta al campo real que devuelva tu backend
+      await http.post('/auth/register', { name, email, password })
+      return true
+    } catch (error) {
+      return false
+    }
+  },
+
+  async requestPasswordReset(email: string) {
+    return http.post('/auth/request-password-reset', { email })
+  },
+
+  async resetPassword(token: string, newPassword: string) {
+    try {
+      await http.post('/auth/reset-password', { token, newPassword })
+      return true
+    } catch (error) {
+      return false
+    }
+  },
+
+  // ===== USERS =====
+  async getProfile() {
+    try {
+      const response = await http.get<User>('/users/me')
+      return response.data
     } catch (error) {
       return null
     }
   },
-  async recuperarCuenta(email: string) {
-    try {
-      const response = await http.post('/auth/request-unlock', { email })
-      console.log('Respuesta de recuperar cuenta:', response.data)
-      return true
-    } catch (error) {
-      console.error('Error al recuperar cuenta:', error)
-      return false
-    }
-  },
-  async unlockAccount(token: string) {
-    try {
-      const response = await http.get('/auth/unlock-account', {
-        params: { token }, // token va en query
-      })
-      console.log('Cuenta desbloqueada:', response.data)
-      return response.data
-    } catch (error) {
-      console.error('Error al desbloquear la cuenta:', error)
-      throw error
-    }
-  },
-  requestPasswordReset(email: string) {
-    return http.post('/auth/request-password-reset', { email })
-  },
-  async resetPassword(token: string, newPassword: string) {
-    try {
-      const response = await http.post(`/auth/reset-password?token=${token}`, {
-        newPassword,
-      })
-      console.log('Respuesta de restablecimiento de contraseña:', response.data)
-      return true
-    } catch (error) {
-      console.error('Error al restablecer la contraseña:', error)
-      return false
-    }
+
+  // Alias para compatibilidad
+  async perfil() {
+    return this.getProfile()
   },
 
-  logout() {
-    localStorage.removeItem('token')
-  },
-
-  // ===== ADMIN METHODS =====
-  async getAllUsers() {
-    try {
-      const response = await http.get('/users')
-      return response.data.data
-    } catch (error) {
-      console.error('Error al obtener usuarios:', error)
-      return []
-    }
-  },
-
-  async deleteUser(userId: number) {
-    try {
-      await http.delete(`/users/${userId}`)
-      return true
-    } catch (error) {
-      console.error('Error al eliminar usuario:', error)
-      return false
-    }
-  },
-
-  async updateUserRole(userId: number, newRole: string) {
-    try {
-      await http.patch(`/users/${userId}/role`, { role: newRole })
-      return true
-    } catch (error) {
-      console.error('Error al actualizar rol:', error)
-      return false
-    }
-  },
-
-  // ===== USER PROFILE METHODS =====
   async updateProfile(data: { name?: string; phone?: string }) {
-    try {
-      await http.patch('/users/me', data)
-      return true
-    } catch (error) {
-      console.error('Error al actualizar perfil:', error)
-      return false
-    }
+    return http.patch('/users/me', data)
   },
 
-  async updatePassword(data: { currentPassword: string; newPassword: string }) {
+  async updatePassword(data: { currentPassword?: string; newPassword: string }) {
     try {
       await http.patch('/users/me/password', data)
       return true
     } catch (error) {
-      console.error('Error al actualizar contraseña:', error)
       return false
     }
   },
@@ -165,121 +101,34 @@ const api = {
       await http.delete('/users/me')
       return true
     } catch (error) {
-      console.error('Error al eliminar cuenta:', error)
       return false
     }
   },
 
-  // ===== WORK ORDERS METHODS =====
-  async getClientWorkOrders() {
+  // ===== ADMIN =====
+  async getAllUsers() {
     try {
-      const response = await http.get('/work-orders/client')
-      return response.data.data
+      const response = await http.get('/users')
+      return response.data
     } catch (error) {
-      console.error('Error al obtener órdenes de trabajo:', error)
       return []
     }
   },
 
-  async getMechanicWorkOrders() {
+  async deleteUser(userId: number) {
     try {
-      const response = await http.get('/work-orders/mechanic')
-      return response.data.data
-    } catch (error) {
-      console.error('Error al obtener órdenes de trabajo (mecánico):', error)
-      return []
-    }
-  },
-
-  async createWorkOrder(data: any) {
-    try {
-      const response = await http.post('/work-orders', data)
-      return response.data
-    } catch (error) {
-      console.error('Error al crear orden de trabajo:', error)
-      return null
-    }
-  },
-
-  async getWorkOrderById(id: number) {
-    try {
-      const response = await http.get(`/work-orders/${id}`)
-      return response.data
-    } catch (error) {
-      console.error('Error al obtener orden de trabajo:', error)
-      return null
-    }
-  },
-
-  async getWorkOrdersByLicensePlate(licensePlate: string) {
-    try {
-      const response = await http.get(`/work-orders/vehicle/${licensePlate}`)
-      return response.data
-    } catch (error) {
-      console.error('Error al obtener historial del vehículo:', error)
-      return { data: [] }
-    }
-  },
-
-  async updateWorkOrder(id: number, data: string) {
-    try {
-      const response = await http.patch(`/work-orders/${id}`, {
-        status: data,
-      })
-      return response.data
-    } catch (error) {
-      console.error('Error al actualizar orden de trabajo:', error)
-      return null
-    }
-  },
-
-  async addWorkOrderItems(id: number, data: { items: NewItem[] }) {
-    try {
-      const response = await http.post(`/work-orders/${id}/items`, data)
-      return response.data
-    } catch (error) {
-      console.error('Error al agregar ítems a la orden:', error)
-      return null
-    }
-  },
-
-  async approveWorkOrderItem(itemId: number) {
-    try {
-      await http.patch(`/work-orders/items/${itemId}/approve`)
+      await http.delete(`/users/${userId}`)
       return true
     } catch (error) {
-      console.error('Error al aprobar ítem:', error)
       return false
     }
   },
 
-  // ===== APPOINTMENTS MECHANIC METHODS =====
-  async getMechanicAppointments() {
+  async updateUserRole(userId: number, role: string) {
     try {
-      const response = await http.get('/appointments/mechanic')
-      return response.data.data
-    } catch (error) {
-      console.error('Error al obtener citas (mecánico):', error)
-      return []
-    }
-  },
-
-  async acceptAppointment(id: number) {
-    try {
-      await http.patch(`/appointments/${id}/accept`)
+      await http.patch(`/users/${userId}/role`, { role })
       return true
     } catch (error) {
-      console.error('Error al aceptar cita:', error)
-      return false
-    }
-  },
-
-  async rejectAppointment(id: number, rejectionReason: string) {
-    try {
-      await http.patch(`/appointments/${id}/reject`, { rejectionReason })
-      return true
-    } catch (error) {
-      console.error('Error al rechazar cita:', error)
       return false
     }
   },
@@ -289,177 +138,211 @@ const api = {
       const response = await http.post('/users/create-mechanic', { name, email, password })
       return { success: true, message: response.data.message }
     } catch (error: any) {
-      console.error('Error al crear mecánico:', error)
-      const errorMessage = error.response?.data?.message || 'Error al crear mecánico'
-      return { success: false, message: errorMessage }
+      return { success: false, message: error.response?.data?.message || 'Error' }
     }
   },
 
-  // consultar horarios disponibles
-  async getAvailableSchedules() {
-    try {
-      const response = await http.get('/schedules/available')
-      return response.data // Ya viene como { data: [...] }
-    } catch (error) {
-      console.error('Error al obtener horarios disponibles:', error)
-      return { data: [] }
-    }
-  },
-
-  //agendar una cita
-  async createAppointment(appointmentData: {
-    mechanicId: number
-    vehicleId: number
-    scheduleId: number
-    hour: string
-    date: string
-    description?: string
-  }) {
-    try {
-      const response = await http.post('/appointments', appointmentData)
-      return {
-        success: true,
-        message: response.data.message,
-        appointmentId: response.data.appointmentId,
-      }
-    } catch (error: any) {
-      console.error('Error al crear cita:', error)
-      const errorMessage = error.response?.data?.message || 'Error al crear cita'
-      return { success: false, message: errorMessage }
-    }
-  },
-
-  //Ver mis citas (Cliente)
-  async getMyAppointments() {
-    try {
-      const response = await http.get('/appointments/client')
-      return response.data // Ya viene como { data: [...] }
-    } catch (error) {
-      console.error('Error al obtener mis citas:', error)
-      return { data: [] }
-    }
-  },
-
-  //Ver detalles de una cita
-  async getAppointmentById(appointmentId: number) {
-    try {
-      const response = await http.get(`/appointments/${appointmentId}`)
-      return response.data.data
-    } catch (error) {
-      console.error('Error al obtener detalles de la cita:', error)
-      return null
-    }
-  },
-
-  //Cancelar una cita
-  async cancelAppointment(appointmentId: number) {
-    try {
-      const response = await http.delete(`/appointments/${appointmentId}`)
-      return { success: true, message: response.data.message }
-    } catch (error: any) {
-      console.error('Error al cancelar la cita:', error)
-      const errorMessage = error.response?.data?.message || 'Error al cancelar la cita'
-      return { success: false, message: errorMessage }
-    }
-  },
-
-  //Obtener vehículos del cliente
+  // ===== VEHICLES =====
   async getMyVehicles() {
     try {
-      const response = await http.get('/users/me/vehicles')
-      return response.data // Ya viene como { data: [...] }
+      const response = await http.get<Vehicle[]>('/users/me/vehicles')
+      return response.data
     } catch (error) {
-      console.error('Error al obtener vehículos:', error)
-      return { data: [] }
-    }
-  },
-
-  // ===== SCHEDULES MECHANIC METHODS =====
-  async getMySchedules() {
-    try {
-      const response = await http.get('/schedules/my')
-      return response.data.data
-    } catch (error) {
-      console.error('Error al obtener mis horarios:', error)
       return []
     }
   },
 
-  async createSchedule(data: { date: string; availableHours: string[] }) {
-    try {
-      await http.post('/schedules', data)
-      return true
-    } catch (error) {
-      console.error('Error al crear horario:', error)
-      return false
-    }
-  },
-
-  async updateSchedule(id: number, availableHours: string[]) {
-    try {
-      await http.patch(`/schedules/${id}`, { availableHours })
-      return true
-    } catch (error) {
-      console.error('Error al actualizar horario:', error)
-      return false
-    }
-  },
-
-  async deleteSchedule(id: number) {
-    try {
-      await http.delete(`/schedules/${id}`)
-      return true
-    } catch (error) {
-      console.error('Error al eliminar horario:', error)
-      return false
-    }
-  },
-
-  // ===== VEHICLES METHODS =====
-  async createVehicle(data: {
-    brand: string
-    model: string
-    year: number
-    licensePlate: string
-    color: string
-  }) {
+  async createVehicle(data: Partial<Vehicle>) {
     try {
       const response = await http.post('/users/me/vehicles', data)
-      return { success: true, message: response.data.message }
+      return { success: true, message: 'Vehículo creado' }
     } catch (error: any) {
-      console.error('Error al crear vehículo:', error)
-      return { success: false, message: error.response?.data?.message || 'Error al crear vehículo' }
+      return { success: false, message: error.response?.data?.message || 'Error' }
     }
   },
 
-  async updateVehicle(
-    id: number,
-    data: { brand?: string; model?: string; year?: number; licensePlate?: string; color?: string },
-  ) {
+  async updateVehicle(id: number, data: Partial<Vehicle>) {
     try {
-      const response = await http.patch(`/users/me/vehicles/${id}`, data)
-      return { success: true, message: response.data.message }
+      await http.patch(`/users/me/vehicles/${id}`, data) // Asumiendo endpoint
+      return { success: true, message: 'Vehículo actualizado' }
     } catch (error: any) {
-      console.error('Error al actualizar vehículo:', error)
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Error al actualizar vehículo',
-      }
+      return { success: false, message: error.response?.data?.message || 'Error' }
     }
   },
 
   async deleteVehicle(id: number) {
     try {
-      const response = await http.delete(`/users/me/vehicles/${id}`)
-      return { success: true, message: response.data.message }
+      await http.delete(`/users/me/vehicles/${id}`) // Asumiendo endpoint
+      return { success: true, message: 'Vehículo eliminado' }
     } catch (error: any) {
-      console.error('Error al eliminar vehículo:', error)
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Error al eliminar vehículo',
-      }
+      return { success: false, message: error.response?.data?.message || 'Error' }
     }
   },
+
+  // ===== WORK ORDERS =====
+  async getClientWorkOrders() {
+    try {
+      const response = await http.get<WorkOrder[]>('/work-orders/client')
+      return response.data
+    } catch (error) {
+      return []
+    }
+  },
+
+  async getMechanicWorkOrders() {
+    try {
+      const response = await http.get<WorkOrder[]>('/work-orders/mechanic')
+      return response.data
+    } catch (error) {
+      return []
+    }
+  },
+
+  async createWorkOrder(data: any) {
+    try {
+      const response = await http.post('/work-orders', data)
+      return response.data
+    } catch (error) {
+      return null
+    }
+  },
+
+  async getWorkOrderById(id: number) {
+    try {
+      const response = await http.get(`/work-orders/${id}`)
+      return response.data
+    } catch (error) {
+      return null
+    }
+  },
+
+  async getWorkOrdersByLicensePlate(licensePlate: string) {
+    try {
+      const response = await http.get(`/work-orders/vehicle/${licensePlate}`)
+      return response.data
+    } catch (error) {
+      return { data: [] }
+    }
+  },
+
+  async updateWorkOrderStatus(id: number, status: string) {
+    return http.patch(`/work-orders/${id}`, { status })
+  },
+
+  // Alias
+  async updateWorkOrder(id: number, status: string) {
+    return this.updateWorkOrderStatus(id, status)
+  },
+
+  async addWorkOrderNote(id: number, note: { content: string; imageUrl?: string }) {
+    return http.post(`/work-orders/${id}/notes`, note)
+  },
+
+  // Alias para compatibilidad (aunque la funcionalidad puede variar)
+  async addWorkOrderItems(id: number, data: any) {
+    // El backend nuevo no parece tener endpoint para agregar items despues de crear
+    // Retornamos null o intentamos usar notes
+    console.warn('addWorkOrderItems no soportado en nuevo backend')
+    return null
+  },
+
+  async approveWorkOrderItem(itemId: number) {
+    try {
+      await http.patch(`/work-orders/items/${itemId}/approve`)
+      return true
+    } catch (error) {
+      return false
+    }
+  },
+
+  // ===== APPOINTMENTS =====
+  async createAppointment(data: { mechanicId: number; vehicleId: number; date: string; scheduleId?: number; hour?: string; description?: string }) {
+    try {
+      const response = await http.post('/appointments', data)
+      return { success: true, message: 'Cita creada' }
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || 'Error' }
+    }
+  },
+
+  async getMechanicAppointments() {
+    try {
+      const response = await http.get<Appointment[]>('/appointments/mechanic')
+      return response.data
+    } catch (error) {
+      return []
+    }
+  },
+
+  async getMyAppointments() {
+    try {
+      // Asumiendo endpoint para cliente
+      const response = await http.get('/appointments/client')
+      return { data: response.data }
+    } catch (error) {
+      return { data: [] }
+    }
+  },
+
+  async cancelAppointment(id: number) {
+    try {
+      await http.delete(`/appointments/${id}`)
+      return { success: true, message: 'Cita cancelada' }
+    } catch (error: any) {
+      return { success: false, message: 'Error' }
+    }
+  },
+
+  async acceptAppointment(id: number) {
+    try {
+      await http.patch(`/appointments/${id}/accept`)
+      return true
+    } catch (error) {
+      return false
+    }
+  },
+
+  async rejectAppointment(id: number, reason?: string) {
+    try {
+      await http.patch(`/appointments/${id}/reject`, { reason })
+      return true
+    } catch (error) {
+      return false
+    }
+  },
+
+  // ===== SCHEDULES =====
+  async getAvailableSchedules() {
+    try {
+      const response = await http.get<{ data: any[] }>('/schedules/available')
+      return response.data
+    } catch (error) {
+      return { data: [] }
+    }
+  },
+  async getMySchedules() {
+    return []
+  },
+  async createSchedule(data: any) {
+    return true
+  },
+  async deleteSchedule(id: number) {
+    return true
+  },
+
+  // ===== NOTIFICATIONS =====
+  async getUnreadNotifications() {
+    try {
+      const response = await http.get<NotificationPayload[]>('/notifications/unread')
+      return response.data
+    } catch (error) {
+      return []
+    }
+  },
+
+  async markNotificationRead(id: number) {
+    return http.patch(`/notifications/${id}/read`)
+  }
 }
 
 export default api

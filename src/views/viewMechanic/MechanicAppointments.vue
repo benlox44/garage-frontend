@@ -3,24 +3,9 @@ import { ref, onMounted } from 'vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
 import { useTheme } from '@/composables/useTheme'
-const { isDark } = useTheme()
+import type { Appointment } from '@/types/garage'
 
-interface Appointment {
-  id: number
-  date: string
-  time: string
-  status: string
-  description: string
-  client: {
-    name: string
-    email: string
-  }
-  vehicle: {
-    brand: string
-    model: string
-    licensePlate: string
-  }
-}
+const { isDark } = useTheme()
 
 const appointments = ref<Appointment[]>([])
 const showModal = ref(false)
@@ -40,7 +25,7 @@ const loadAppointments = async () => {
 const confirmAccept = (appt: Appointment) => {
   modalConfig.value = {
     title: 'Aceptar Cita',
-    message: `¿Confirmar cita para ${appt.client.name} el ${new Date(appt.date).toLocaleDateString()}?`,
+    message: `¿Confirmar cita para ${appt.client?.name || 'Cliente'} el ${new Date(appt.date).toLocaleDateString()}?`,
     type: 'info',
     showCancel: true,
     action: async () => {
@@ -63,7 +48,7 @@ const confirmReject = (appt: Appointment) => {
 
   modalConfig.value = {
     title: 'Rechazar Cita',
-    message: `¿Rechazar cita de ${appt.client.name}?`,
+    message: `¿Rechazar cita de ${appt.client?.name || 'Cliente'}?`,
     type: 'warning',
     showCancel: true,
     action: async () => {
@@ -130,13 +115,13 @@ onMounted(() => {
         <div class="appt-body">
           <div class="client-info">
             <h4>Cliente</h4>
-            <p>{{ appt.client.name }}</p>
-            <p class="sub-text">{{ appt.client.email }}</p>
+            <p>{{ appt.client?.name || 'N/A' }}</p>
+            <p class="sub-text">{{ appt.client?.email || 'N/A' }}</p>
           </div>
           <div class="vehicle-info">
             <h4>Vehículo</h4>
-            <p>{{ appt.vehicle.brand }} {{ appt.vehicle.model }}</p>
-            <span class="plate">{{ appt.vehicle.licensePlate }}</span>
+            <p>{{ appt.vehicle?.brand }} {{ appt.vehicle?.model }}</p>
+            <span class="plate">{{ appt.vehicle?.licensePlate }}</span>
           </div>
           <div class="service-info">
             <h4>Servicio</h4>

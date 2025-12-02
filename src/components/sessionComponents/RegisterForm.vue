@@ -164,7 +164,6 @@ export default {
         password: this.password,
       }
       const registroUsuario = await api.register(formData.name, formData.email, formData.password)
-      console.log(registroUsuario)
       if (registroUsuario) {
         this.$router.push('/login')
       } else if (!registroUsuario) {

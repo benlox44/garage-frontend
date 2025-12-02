@@ -75,7 +75,6 @@ export default {
     const route = useRoute()
     const router = useRouter()
     const token = route.query.token
-    console.log('Token recuperado:', token)
     return { token, router }
   },
   methods: {

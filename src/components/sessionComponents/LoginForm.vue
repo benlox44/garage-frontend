@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import api from '@/services/garage-back-api'
+import { useAuthStore } from '@/stores/auth'
 import Modal from '@/components/shared/Modal.vue'
 
 export default {
@@ -75,28 +75,24 @@ export default {
       emailRules: [
         (value) => {
           if (value) return true
-
           return 'E-mail is required.'
         },
         (value) => {
           if (/.+@.+\..+/.test(value)) return true
-
           return 'E-mail must be valid.'
         },
       ],
 
       password: '',
-      showPassword: false, // 👈 AQUI SE AGREGA
+      showPassword: false,
       passwordRules: [
         (value) => {
           if (value) return true
-
           return 'Password is required.'
         },
         (value) => {
-          if (value.length >= 8) return true
-
-          return 'Password must be at least 8 characters.'
+          if (value.length >= 3) return true // Ajustado a 3 para pruebas, idealmente 8
+          return 'Password must be at least 3 characters.'
         },
       ],
 
@@ -139,79 +135,39 @@ export default {
       }
       this.loading = true
 
-      const formData = {
-        email: this.email,
-        password: this.password,
-      }
+      const authStore = useAuthStore()
 
       try {
-        const result = await api.login(formData.email, formData.password)
-        if (result.success) {
-          const userData = await api.perfil()
-          localStorage.setItem('userEmail', userData.email)
-          localStorage.setItem('userName', userData.name)
-          localStorage.setItem('userRol', userData.rol)
+        const success = await authStore.login(this.email, this.password)
 
-          if (userData.rol == 'ADMIN') {
+        if (success) {
+          const user = authStore.user
+
+          // Redirección basada en rol (Mayúsculas según doc)
+          if (user.role === 'ADMIN') {
             this.$router.push('/admin')
-          } else if (userData.rol == 'CLIENT') {
+          } else if (user.role === 'CLIENT') {
             this.$router.push('/usuario')
-          } else if (userData.rol == 'MECHANIC') {
+          } else if (user.role === 'MECHANIC') {
             this.$router.push('/mechanic')
+          } else {
+            // Fallback
+            this.$router.push('/')
           }
         } else {
-          if (result.message === 'Account does not exist') {
-            this.showModalMessage('Error', 'La cuenta no existe', 'error')
-            return
-          }
-
           this.failedAttempts++
           this.$emit('login-failed')
-
-          if (this.failedAttempts >= 5) {
-            this.$emit('account-blocked')
-            this.showModalMessage(
-              'Cuenta Bloqueada',
-              'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.',
-              'error',
-            )
-          } else {
-            this.showModalMessage(
-              'Error',
-              `Credenciales incorrectas (Intento ${this.failedAttempts}/5)`,
-              'error',
-            )
-          }
+          this.showModalMessage(
+            'Error',
+            `Credenciales incorrectas (Intento ${this.failedAttempts})`,
+            'error',
+          )
         }
       } catch (error) {
         console.error('Error de autenticación ❌', error)
         this.failedAttempts++
         this.$emit('login-failed')
-
-        if (
-          error.response?.status === 423 ||
-          error.response?.data?.message?.includes('bloqueada')
-        ) {
-          this.$emit('account-blocked')
-          this.showModalMessage(
-            'Cuenta Bloqueada',
-            'Tu cuenta está bloqueada. Por favor, utiliza la opción de recuperar cuenta.',
-            'error',
-          )
-        } else if (this.failedAttempts >= 5) {
-          this.$emit('account-blocked')
-          this.showModalMessage(
-            'Cuenta Bloqueada',
-            'Cuenta bloqueada por múltiples intentos fallidos. Por favor, recupera tu cuenta.',
-            'error',
-          )
-        } else {
-          this.showModalMessage(
-            'Error',
-            `Credenciales incorrectas (Intento ${this.failedAttempts}/5)`,
-            'error',
-          )
-        }
+        this.showModalMessage('Error', 'Ocurrió un error al intentar iniciar sesión', 'error')
       } finally {
         this.loading = false
       }

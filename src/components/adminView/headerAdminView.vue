@@ -43,20 +43,23 @@
         </RouterLink>
 
         <!-- Navigation -->
-        <nav class="flex flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-          <RouterLink
-            to="/admin"
+        <nav class="flex flex-row gap-3 sm:gap-4 w-full sm:w-auto items-center">
+          <!-- Notification Bell -->
+          <NotificationBellTailwind />
+
+          <button
+            @click="$emit('navigate', 'users')"
             class="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 border-2 border-[#3AAFA9] text-[#DEF2F1] font-bold rounded-xl hover:bg-[#3AAFA9]/20 backdrop-blur-sm transition-all duration-300 text-center text-sm sm:text-base hover:scale-105 hover:shadow-lg hover:shadow-[#3AAFA9]/30"
           >
             Ver usuarios
-          </RouterLink>
+          </button>
 
-          <RouterLink
-            to="/admin"
+          <button
+            @click="$emit('navigate', 'profile')"
             class="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 border-2 border-[#3AAFA9] text-[#DEF2F1] font-bold rounded-xl hover:bg-[#3AAFA9]/20 backdrop-blur-sm transition-all duration-300 text-center text-sm sm:text-base hover:scale-105 hover:shadow-lg hover:shadow-[#3AAFA9]/30"
           >
             Modificar perfil
-          </RouterLink>
+          </button>
 
           <button
             @click="handleLogout"
@@ -83,9 +86,11 @@
 import { RouterLink, useRouter } from 'vue-router'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
+import NotificationBellTailwind from '@/components/shared/NotificationBellTailwind.vue'
 import { ref } from 'vue'
 
 const router = useRouter()
+const emit = defineEmits(['navigate'])
 
 const showModal = ref(false)
 
