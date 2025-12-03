@@ -113,8 +113,8 @@ const api = {
   // ===== ADMIN =====
   async getAllUsers() {
     try {
-      const response = await http.get('/users')
-      return response.data
+      const response = await http.get<{ data: User[] }>('/users')
+      return response.data.data
     } catch (error) {
       return []
     }
