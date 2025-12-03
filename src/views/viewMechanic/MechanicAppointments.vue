@@ -11,6 +11,10 @@ const route = useRoute()
 
 const appointments = ref<Appointment[]>([])
 const showModal = ref(false)
+const showRejectModal = ref(false)
+const rejectionReason = ref('')
+const selectedAppt = ref<Appointment | null>(null)
+
 const modalConfig = ref({
   title: '',
   message: '',
@@ -60,24 +64,47 @@ const confirmAccept = (appt: Appointment) => {
 }
 
 const confirmReject = (appt: Appointment) => {
-  // For simplicity, using a prompt for reason, ideally a custom modal with input
-  const rejectionReason = prompt('Ingrese motivo de rechazo:')
-  if (!rejectionReason) return
+  selectedAppt.value = appt
+  rejectionReason.value = ''
+  showRejectModal.value = true
+}
 
-  modalConfig.value = {
-    title: 'Rechazar Cita',
-    message: `¿Rechazar cita de ${appt.client?.name || 'Cliente'}?`,
-    type: 'warning',
-    showCancel: true,
-    action: async () => {
-      const success = await api.rejectAppointment(appt.id, rejectionReason)
-      if (success) {
-        await loadAppointments()
-        showModal.value = false
-      }
-    },
+const handleReject = async () => {
+  if (!selectedAppt.value) return
+  if (!rejectionReason.value.trim()) {
+    modalConfig.value = {
+      title: 'Atención',
+      message: 'Debe ingresar un motivo para rechazar la cita.',
+      type: 'warning',
+      showCancel: false,
+      action: null,
+    }
+    showModal.value = true
+    return
   }
-  showModal.value = true
+
+  const success = await api.rejectAppointment(selectedAppt.value.id, rejectionReason.value)
+  if (success) {
+    await loadAppointments()
+    showRejectModal.value = false
+    modalConfig.value = {
+      title: 'Éxito',
+      message: 'Cita rechazada correctamente.',
+      type: 'success',
+      showCancel: false,
+      action: null,
+    }
+    showModal.value = true
+  } else {
+    modalConfig.value = {
+      title: 'Error',
+      message: 'No se pudo rechazar la cita. Intente nuevamente.',
+      type: 'error',
+      showCancel: false,
+      action: null,
+    }
+    showModal.value = true
+  }
 }
 
 const handleConfirm = () => {
@@ -163,10 +190,44 @@ onMounted(() => {
       @close="showModal = false"
       @confirm="handleConfirm"
     />
+
+    <Modal
+      :show="showRejectModal"
+      title="Rechazar Cita"
+      type="warning"
+      :show-cancel="true"
+      @close="showRejectModal = false"
+      @confirm="handleReject"
+    >
+      <template #body>
+        <p>Ingrese el motivo del rechazo para {{ selectedAppt?.client?.name }}:</p>
+        <textarea
+          v-model="rejectionReason"
+          class="reject-input"
+          placeholder="Motivo..."
+        ></textarea>
+      </template>
+    </Modal>
   </div>
 </template>
 
 <style scoped>
+.reject-input {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-height: 80px;
+  resize: vertical;
+  color: #333;
+}
+.dark-theme .reject-input {
+  background-color: #333;
+  color: #fff;
+  border-color: #555;
+}
+
 .status-select {
   max-width: 150px;
 }

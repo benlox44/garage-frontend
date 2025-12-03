@@ -320,7 +320,7 @@ const api = {
 
   async rejectAppointment(id: number, reason?: string) {
     try {
-      await http.patch(`/appointments/${id}/reject`, { reason })
+      await http.patch(`/appointments/${id}/reject`, { rejectionReason: reason })
       return true
     } catch (error) {
       return false
