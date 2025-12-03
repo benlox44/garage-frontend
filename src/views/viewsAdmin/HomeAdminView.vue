@@ -5,15 +5,7 @@ import headerAdmin from '@/components/adminView/headerAdminView.vue'
 import api from '@/services/garage-back-api'
 import Modal from '@/components/shared/Modal.vue'
 import Profile from '@/components/clientView/Profile.vue'
-
-interface User {
-  id: number
-  name: string
-  email: string
-  role: 'ADMIN' | 'CLIENT' | 'MECHANIC'
-  isEmailConfirmed: boolean
-  isLocked: boolean
-}
+import type { User } from '@/types/garage'
 
 const route = useRoute()
 const router = useRouter()

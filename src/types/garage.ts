@@ -24,6 +24,8 @@ export interface User {
   name: string
   role: Role
   phone?: string
+  isEmailConfirmed?: boolean
+  isLocked?: boolean
 }
 
 export interface Vehicle {
